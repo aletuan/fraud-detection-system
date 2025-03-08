@@ -23,31 +23,31 @@
 - [x] Mock repository for testing
 - [x] Unit tests for repository
 
+### 4. ValidateTransaction
+- [x] Currency and amount limits validation
+  - [x] Maximum amount per transaction
+  - [ ] Daily/Monthly limits (TODO)
+  - [x] Currency specific rules
+- [x] Location validation
+  - [x] Suspicious locations
+  - [ ] Velocity checks (TODO)
+- [x] Merchant validation
+  - [x] Merchant category rules
+  - [x] High-risk merchant checks
+  - [x] Merchant location validation
+- [x] Device validation
+  - [x] Known device checks
+  - [x] Device risk assessment
+  - [x] Browser/OS validation
+- [x] Risk Score Calculation
+  - [x] Amount-based risk score (30%)
+  - [x] Missing information risk score (30%)
+  - [x] Unknown information risk score (20%)
+  - [x] Validation rules risk score (20%)
+
 ## Pending Features
 
-### 1. ValidateTransaction (Next)
-Priority: High
-```go
-func (s *transactionService) ValidateTransaction(ctx context.Context, tx *domain.Transaction) error
-```
-- [ ] Currency and amount limits validation
-  - Maximum amount per transaction
-  - Daily/Monthly limits
-  - Currency specific rules
-- [ ] Location and time validation
-  - Suspicious locations
-  - Unusual transaction times
-  - Velocity checks
-- [ ] Merchant validation
-  - Merchant category rules
-  - High-risk merchant checks
-  - Merchant location validation
-- [ ] Device validation
-  - Known device checks
-  - Device risk assessment
-  - Browser/OS validation
-
-### 2. ProcessTransaction
+### 1. ProcessTransaction
 Priority: High
 ```go
 func (s *transactionService) ProcessTransaction(ctx context.Context, tx *domain.Transaction) error
@@ -68,7 +68,7 @@ func (s *transactionService) ProcessTransaction(ctx context.Context, tx *domain.
   - International transactions
   - First-time transactions
 
-### 3. EnrichTransactionData
+### 2. EnrichTransactionData
 Priority: Medium
 ```go
 func (s *transactionService) EnrichTransactionData(ctx context.Context, tx *domain.Transaction) error
@@ -90,8 +90,8 @@ func (s *transactionService) EnrichTransactionData(ctx context.Context, tx *doma
   - Historical patterns
   - Related transactions
 
-### 4. Kafka Integration
-Priority: Medium
+### 3. Kafka Integration
+Priority: High
 ```go
 func (s *transactionService) PublishTransactionEvent(ctx context.Context, tx *domain.Transaction, eventType EventType) error
 ```
@@ -115,13 +115,13 @@ func (s *transactionService) PublishTransactionEvent(ctx context.Context, tx *do
 ## Testing Strategy
 
 ### Unit Tests
-- [ ] Validation rules testing
-- [ ] Business logic testing
-- [ ] Edge cases coverage
-- [ ] Error handling verification
+- [x] Validation rules testing
+- [x] Business logic testing
+- [x] Edge cases coverage
+- [x] Error handling verification
 
 ### Integration Tests
-- [ ] Database integration
+- [x] Database integration
 - [ ] Kafka integration
 - [ ] External services integration
 
