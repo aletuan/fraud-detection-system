@@ -1,0 +1,55 @@
+# General
+.env
+.DS_Store
+*.log
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Go
+/services/transaction-service/vendor/
+/services/transaction-service/bin/
+
+# Python
+/services/fraud-detection/venv/
+/services/fraud-detection/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Kotlin/Java
+/services/security-alert/build/
+/services/security-alert/.gradle/
+/services/security-alert/out/
+*.class
+*.jar
+!gradle-wrapper.jar
+
+# Node.js
+/services/notification-service/node_modules/
+/services/notification-service/npm-debug.log
+/services/notification-service/.env
+
+# Rust
+/services/realtime-processor/target/
+/services/realtime-processor/Cargo.lock
+**/*.rs.bk
+
+# Docker
+.docker/
+
+# MongoDB
+mongodb_data/
+
+# Elasticsearch
+elasticsearch-data/
+
+# Tests
+coverage/
+.coverage
+htmlcov/ 
