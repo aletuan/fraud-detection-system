@@ -108,18 +108,30 @@ Priority: High
 ```go
 func (s *transactionService) ProcessTransaction(ctx context.Context, tx *domain.Transaction) error
 ```
-- [ ] Basic validation
-  - [ ] Input validation
-  - [ ] Business rules validation
-  - [ ] Status validation
-- [ ] Event publishing
-  - [ ] Publish to Fraud Detection Service
-  - [ ] Wait for risk assessment
-  - [ ] Update transaction status
-- [ ] Response handling
+- [ ] Fraud Detection Flow
+  - [ ] Send transaction data to Fraud Detection Service
   - [ ] Handle fraud detection response
-  - [ ] Handle timeout scenarios
-  - [ ] Update transaction status
+  - [ ] Implement timeout mechanism
+  - [ ] Update transaction status based on fraud check result
+
+- [ ] Account Service Integration
+  - [ ] Check account balance
+  - [ ] Verify transaction limits
+  - [ ] Process account debit/credit
+  - [ ] Handle insufficient funds scenario
+  - [ ] Handle account service errors
+
+- [ ] Transaction Completion
+  - [ ] Update final transaction status
+  - [ ] Record completion metadata
+  - [ ] Handle rollback scenarios
+  - [ ] Implement retry mechanism for failed steps
+
+- [ ] Event Publishing
+  - [ ] Publish status update events
+  - [ ] Send notifications to Customer Service
+  - [ ] Handle event publishing failures
+  - [ ] Implement dead letter queue for failed events
 
 ### 2. External Service Integration
 Priority: High
