@@ -45,6 +45,24 @@
   - [x] Unknown information risk score (20%)
   - [x] Validation rules risk score (20%)
 
+### 5. Kafka Integration
+- [x] Kafka producer setup
+  - [x] Configuration
+  - [x] Connection management
+  - [x] Error handling
+- [x] Event schema definition
+  - [x] Event types
+  - [x] Payload structure
+  - [x] Version management
+- [x] Data serialization
+  - [x] JSON serialization
+  - [x] Schema validation
+  - [x] Backward compatibility
+- [ ] Publishing logic
+  - [ ] Retry mechanism
+  - [ ] Dead letter queue
+  - [ ] Monitoring
+
 ## Pending Features
 
 ### 1. ProcessTransaction
@@ -90,28 +108,6 @@ func (s *transactionService) EnrichTransactionData(ctx context.Context, tx *doma
   - Historical patterns
   - Related transactions
 
-### 3. Kafka Integration
-Priority: High
-```go
-func (s *transactionService) PublishTransactionEvent(ctx context.Context, tx *domain.Transaction, eventType EventType) error
-```
-- [ ] Kafka producer setup
-  - Configuration
-  - Connection management
-  - Error handling
-- [ ] Event schema definition
-  - Event types
-  - Payload structure
-  - Version management
-- [ ] Data serialization
-  - JSON serialization
-  - Schema validation
-  - Backward compatibility
-- [ ] Publishing logic
-  - Retry mechanism
-  - Dead letter queue
-  - Monitoring
-
 ## Testing Strategy
 
 ### Unit Tests
@@ -122,7 +118,7 @@ func (s *transactionService) PublishTransactionEvent(ctx context.Context, tx *do
 
 ### Integration Tests
 - [x] Database integration
-- [ ] Kafka integration
+- [x] Kafka integration (unit tests)
 - [ ] External services integration
 
 ### Performance Tests

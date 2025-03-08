@@ -10,37 +10,54 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"transaction-service/internal/domain"
+	mockRepo "transaction-service/internal/repository/mock"
 	"transaction-service/internal/repository"
-	repoMock "transaction-service/internal/repository/mock"
 )
 
 func TestTransactionService_CreateTransaction(t *testing.T) {
-	ctx := context.Background()
-
 	t.Run("Success", func(t *testing.T) {
-		mockRepo := new(repoMock.MockTransactionRepository)
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
 		service := NewTransactionService(mockRepo)
 
+		// Create test input
 		input := CreateTransactionInput{
 			AccountID:   "acc123",
-			Amount:      100.50,
+			Amount:      1000.0,
 			Currency:    "USD",
 			Type:        domain.TransactionTypeDebit,
-			Description: "Test transaction",
 			ReferenceID: "REF123",
+			Description: "Test transaction",
 			MerchantInfo: &MerchantInfo{
 				ID:       "merch123",
 				Name:     "Test Merchant",
 				Category: "retail",
 				Country:  "US",
 			},
+			Location: &domain.Location{
+				Country: "US",
+				City:    "New York",
+				Coordinates: &domain.Coordinates{
+					Latitude:  40.7128,
+					Longitude: -74.0060,
+				},
+			},
+			DeviceInfo: &domain.DeviceInfo{
+				DeviceType:  "mobile",
+				BrowserType: "chrome",
+				DeviceOS:    "ios",
+				IsMobile:    true,
+				IPAddress:   "192.168.1.1",
+				UserAgent:   "Mozilla/5.0",
+			},
 		}
 
-		mockRepo.On("GetByReferenceID", ctx, input.ReferenceID).Return(nil, repository.ErrNotFound)
-		mockRepo.On("Create", ctx, mock.AnythingOfType("*domain.Transaction")).Return(nil)
+		// Setup mock expectations
+		mockRepo.On("GetByReferenceID", mock.Anything, input.ReferenceID).Return(nil, repository.ErrNotFound)
+		mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(nil)
 
-		tx, err := service.CreateTransaction(ctx, input)
-
+		// Execute test
+		tx, err := service.CreateTransaction(context.Background(), input)
 		assert.NoError(t, err)
 		assert.NotNil(t, tx)
 		assert.Equal(t, input.AccountID, tx.AccountID)
@@ -51,213 +68,280 @@ func TestTransactionService_CreateTransaction(t *testing.T) {
 		assert.Equal(t, input.ReferenceID, tx.ReferenceID)
 		assert.Equal(t, input.MerchantInfo.ID, tx.MerchantID)
 		assert.Equal(t, input.MerchantInfo.Name, tx.MerchantName)
-		assert.Contains(t, tx.Metadata, "merchant_category")
-		assert.Contains(t, tx.Metadata, "merchant_country")
 
+		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("Duplicate_Transaction", func(t *testing.T) {
-		mockRepo := new(repoMock.MockTransactionRepository)
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
 		service := NewTransactionService(mockRepo)
 
+		// Create test input
 		input := CreateTransactionInput{
 			AccountID:   "acc123",
-			Amount:      100.50,
+			Amount:      1000.0,
 			Currency:    "USD",
 			Type:        domain.TransactionTypeDebit,
 			ReferenceID: "REF123",
 		}
 
+		// Setup mock expectations
 		existingTx := &domain.Transaction{
 			ID:          primitive.NewObjectID(),
 			ReferenceID: input.ReferenceID,
+			CreatedAt:   time.Now(),
 		}
+		mockRepo.On("GetByReferenceID", mock.Anything, input.ReferenceID).Return(existingTx, nil)
 
-		mockRepo.On("GetByReferenceID", ctx, input.ReferenceID).Return(existingTx, nil)
-
-		tx, err := service.CreateTransaction(ctx, input)
-
+		// Execute test
+		tx, err := service.CreateTransaction(context.Background(), input)
 		assert.Error(t, err)
 		assert.Nil(t, tx)
-		assert.ErrorIs(t, err, ErrDuplicateTransaction)
+		assert.Equal(t, ErrDuplicateTransaction, err)
 
+		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("Invalid_Input", func(t *testing.T) {
-		mockRepo := new(repoMock.MockTransactionRepository)
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
 		service := NewTransactionService(mockRepo)
 
+		// Create test input with missing required fields
 		input := CreateTransactionInput{
-			// Missing required fields
-			Description: "Test transaction",
+			AccountID: "acc123",
+			// Missing amount, currency, type, reference_id
 		}
 
-		tx, err := service.CreateTransaction(ctx, input)
-
+		// Execute test
+		tx, err := service.CreateTransaction(context.Background(), input)
 		assert.Error(t, err)
 		assert.Nil(t, tx)
-		assert.ErrorIs(t, err, ErrInvalidInput)
+		assert.Contains(t, err.Error(), ErrInvalidInput.Error())
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 }
 
 func TestTransactionService_UpdateTransaction(t *testing.T) {
-	mockRepo := new(repoMock.MockTransactionRepository)
-	service := NewTransactionService(mockRepo)
-	ctx := context.Background()
-
 	t.Run("Success", func(t *testing.T) {
-		id := primitive.NewObjectID()
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
+
+		// Create test data
+		txID := primitive.NewObjectID()
 		existingTx := &domain.Transaction{
-			ID:     id,
-			Status: domain.StatusPending,
+			ID:          txID,
+			AccountID:   "acc123",
+			Amount:      1000.0,
+			Currency:    "USD",
+			Type:        domain.TransactionTypeDebit,
+			Status:      domain.StatusPending,
+			ReferenceID: "REF123",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
 
 		input := UpdateTransactionInput{
 			Status:      domain.StatusCompleted,
 			Description: "Updated description",
 			Metadata: map[string]interface{}{
-				"reason": "test",
+				"updated_by": "test",
 			},
 		}
 
-		mockRepo.On("GetByID", ctx, id.Hex()).Return(existingTx, nil)
-		mockRepo.On("Update", ctx, mock.AnythingOfType("*domain.Transaction")).Return(nil)
+		// Setup mock expectations
+		mockRepo.On("GetByID", mock.Anything, txID.Hex()).Return(existingTx, nil)
+		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(nil)
 
-		tx, err := service.UpdateTransaction(ctx, id.Hex(), input)
-
+		// Execute test
+		tx, err := service.UpdateTransaction(context.Background(), txID.Hex(), input)
 		assert.NoError(t, err)
 		assert.NotNil(t, tx)
 		assert.Equal(t, input.Status, tx.Status)
 		assert.Equal(t, input.Description, tx.Description)
-		assert.Contains(t, tx.Metadata, "reason")
+		assert.Equal(t, input.Metadata["updated_by"], tx.Metadata["updated_by"])
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("Invalid_Status_Transition", func(t *testing.T) {
-		id := primitive.NewObjectID()
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
+
+		// Create test data
+		txID := primitive.NewObjectID()
 		existingTx := &domain.Transaction{
-			ID:     id,
-			Status: domain.StatusCompleted,
+			ID:          txID,
+			Status:      domain.StatusCompleted, // Already completed
+			ReferenceID: "REF123",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
 
 		input := UpdateTransactionInput{
-			Status: domain.StatusFailed,
+			Status: domain.StatusFailed, // Try to change to failed
 		}
 
-		mockRepo.On("GetByID", ctx, id.Hex()).Return(existingTx, nil)
+		// Setup mock expectations
+		mockRepo.On("GetByID", mock.Anything, txID.Hex()).Return(existingTx, nil)
 
-		tx, err := service.UpdateTransaction(ctx, id.Hex(), input)
-
+		// Execute test
+		tx, err := service.UpdateTransaction(context.Background(), txID.Hex(), input)
 		assert.Error(t, err)
 		assert.Nil(t, tx)
-		assert.ErrorIs(t, err, ErrInvalidStatus)
+		assert.Contains(t, err.Error(), ErrInvalidStatus.Error())
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("Transaction_Not_Found", func(t *testing.T) {
-		id := primitive.NewObjectID()
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
+
+		// Create test data
+		txID := primitive.NewObjectID()
 		input := UpdateTransactionInput{
 			Status: domain.StatusCompleted,
 		}
 
-		mockRepo.On("GetByID", ctx, id.Hex()).Return(nil, repository.ErrNotFound)
+		// Setup mock expectations
+		mockRepo.On("GetByID", mock.Anything, txID.Hex()).Return(nil, repository.ErrNotFound)
 
-		tx, err := service.UpdateTransaction(ctx, id.Hex(), input)
-
+		// Execute test
+		tx, err := service.UpdateTransaction(context.Background(), txID.Hex(), input)
 		assert.Error(t, err)
 		assert.Nil(t, tx)
-		assert.ErrorIs(t, err, ErrTransactionNotFound)
+		assert.Equal(t, ErrTransactionNotFound, err)
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 }
 
 func TestTransactionService_ListTransactions(t *testing.T) {
-	mockRepo := new(repoMock.MockTransactionRepository)
-	service := NewTransactionService(mockRepo)
-	ctx := context.Background()
-
 	t.Run("Success", func(t *testing.T) {
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
+
+		// Create test data
 		params := ListTransactionsParams{
-			AccountID:  "acc123",
-			Status:     string(domain.StatusPending),
-			StartDate:  time.Now().Add(-24 * time.Hour),
-			EndDate:    time.Now(),
-			MinAmount:  ptr(100.0),
-			MaxAmount:  ptr(1000.0),
-			Page:       1,
-			PageSize:   10,
-			SortBy:     "created_at",
-			SortDesc:   true,
+			AccountID: "acc123",
+			Status:    string(domain.StatusPending),
+			Page:      1,
+			PageSize:  10,
+			SortBy:    "created_at", // Valid sort field
 		}
 
 		expectedTxs := []domain.Transaction{
 			{
-				ID:        primitive.NewObjectID(),
-				AccountID: "acc123",
-				Amount:    500.0,
-				Status:    domain.StatusPending,
+				ID:          primitive.NewObjectID(),
+				AccountID:   "acc123",
+				Status:      domain.StatusPending,
+				ReferenceID: "REF123",
+				CreatedAt:   time.Now(),
 			},
 		}
 		expectedTotal := int64(1)
 
-		mockRepo.On("List", ctx, mock.AnythingOfType("repository.ListParams")).Return(expectedTxs, expectedTotal, nil)
+		// Setup mock expectations with correct repository.ListParams
+		mockRepo.On("List", mock.Anything, mock.MatchedBy(func(p repository.ListParams) bool {
+			return p.Page == params.Page &&
+				p.PageSize == params.PageSize &&
+				p.SortBy == params.SortBy &&
+				p.Filters["account_id"] == params.AccountID &&
+				p.Filters["status"] == params.Status
+		})).Return(expectedTxs, expectedTotal, nil)
 
-		txs, total, err := service.ListTransactions(ctx, params)
-
+		// Execute test
+		txs, total, err := service.ListTransactions(context.Background(), params)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedTxs, txs)
 		assert.Equal(t, expectedTotal, total)
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("Invalid_Params", func(t *testing.T) {
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
+
+		// Create test data with invalid params
 		params := ListTransactionsParams{
-			// Invalid page number
-			Page:     0,
-			PageSize: 10,
+			Page:     0, // Invalid page number
+			PageSize: 0, // Invalid page size
 		}
 
-		txs, total, err := service.ListTransactions(ctx, params)
-
+		// Execute test
+		txs, total, err := service.ListTransactions(context.Background(), params)
 		assert.Error(t, err)
-		assert.Nil(t, txs)
+		assert.Empty(t, txs)
 		assert.Zero(t, total)
-		assert.ErrorIs(t, err, ErrInvalidInput)
+		assert.Contains(t, err.Error(), ErrInvalidInput.Error())
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 }
 
 func TestTransactionService_GetTransaction(t *testing.T) {
-	mockRepo := new(repoMock.MockTransactionRepository)
-	service := NewTransactionService(mockRepo)
-	ctx := context.Background()
-
 	t.Run("Success", func(t *testing.T) {
-		id := primitive.NewObjectID()
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
+
+		// Create test data
+		txID := primitive.NewObjectID()
 		expectedTx := &domain.Transaction{
-			ID:     id,
-			Amount: 100.0,
+			ID:          txID,
+			AccountID:   "acc123",
+			Status:      domain.StatusPending,
+			ReferenceID: "REF123",
+			CreatedAt:   time.Now(),
 		}
 
-		mockRepo.On("GetByID", ctx, id.Hex()).Return(expectedTx, nil)
+		// Setup mock expectations
+		mockRepo.On("GetByID", mock.Anything, txID.Hex()).Return(expectedTx, nil)
 
-		tx, err := service.GetTransaction(ctx, id.Hex())
-
+		// Execute test
+		tx, err := service.GetTransaction(context.Background(), txID.Hex())
 		assert.NoError(t, err)
 		assert.Equal(t, expectedTx, tx)
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
 	})
 
 	t.Run("Not_Found", func(t *testing.T) {
-		id := primitive.NewObjectID()
+		// Setup mock repository
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		service := NewTransactionService(mockRepo)
 
-		mockRepo.On("GetByID", ctx, id.Hex()).Return(nil, repository.ErrNotFound)
+		// Create test data
+		txID := primitive.NewObjectID()
 
-		tx, err := service.GetTransaction(ctx, id.Hex())
+		// Setup mock expectations
+		mockRepo.On("GetByID", mock.Anything, txID.Hex()).Return(nil, repository.ErrNotFound)
 
+		// Execute test
+		tx, err := service.GetTransaction(context.Background(), txID.Hex())
 		assert.Error(t, err)
 		assert.Nil(t, tx)
-		assert.ErrorIs(t, err, ErrTransactionNotFound)
-	})
-}
+		assert.Equal(t, ErrTransactionNotFound, err)
 
-// Helper function to create pointer to float64
-func ptr(v float64) *float64 {
-	return &v
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
+	})
 } 

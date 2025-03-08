@@ -30,7 +30,7 @@ type CreateTransactionInput struct {
 	AccountID    string                 `json:"account_id" validate:"required"`
 	Amount       float64                `json:"amount" validate:"required,gt=0"`
 	Currency     string                 `json:"currency" validate:"required,len=3"`
-	Type         domain.TransactionType `json:"type" validate:"required,oneof=debit credit"`
+	Type         domain.TransactionType `json:"type" validate:"required,oneof=DEBIT CREDIT"`
 	Description  string                 `json:"description"`
 	MerchantInfo *MerchantInfo         `json:"merchant_info"`
 	Location     *domain.Location      `json:"location"`
@@ -41,7 +41,7 @@ type CreateTransactionInput struct {
 
 // UpdateTransactionInput đại diện cho dữ liệu cập nhật giao dịch
 type UpdateTransactionInput struct {
-	Status      domain.TransactionStatus `json:"status" validate:"required,oneof=pending completed failed"`
+	Status      domain.TransactionStatus `json:"status" validate:"required,oneof=PENDING COMPLETED FAILED"`
 	Description string                   `json:"description"`
 	Metadata    map[string]interface{}   `json:"metadata"`
 }

@@ -6,57 +6,63 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// TransactionType represents the type of transaction
+// TransactionType định nghĩa loại giao dịch
 type TransactionType string
 
 const (
-	TransactionTypeDebit  TransactionType = "debit"
-	TransactionTypeCredit TransactionType = "credit"
+	TransactionTypeDebit  TransactionType = "DEBIT"
+	TransactionTypeCredit TransactionType = "CREDIT"
 )
 
-// TransactionStatus represents the status of transaction
+// TransactionStatus định nghĩa trạng thái giao dịch
 type TransactionStatus string
 
 const (
-	StatusPending   TransactionStatus = "pending"
-	StatusCompleted TransactionStatus = "completed"
-	StatusFailed    TransactionStatus = "failed"
+	StatusPending   TransactionStatus = "PENDING"
+	StatusCompleted TransactionStatus = "COMPLETED"
+	StatusFailed    TransactionStatus = "FAILED"
 )
 
-// Transaction represents a financial transaction
+// Transaction đại diện cho một giao dịch
 type Transaction struct {
-	ID              primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	AccountID       string            `json:"account_id" bson:"account_id" validate:"required"`
-	Amount          float64           `json:"amount" bson:"amount" validate:"required,gt=0"`
-	Currency        string            `json:"currency" bson:"currency" validate:"required,len=3"`
-	Type            TransactionType   `json:"type" bson:"type" validate:"required,oneof=debit credit"`
-	Status          TransactionStatus `json:"status" bson:"status" validate:"required"`
-	Description     string            `json:"description" bson:"description"`
-	MerchantID      string            `json:"merchant_id" bson:"merchant_id"`
-	MerchantName    string            `json:"merchant_name" bson:"merchant_name"`
-	Location        *Location         `json:"location,omitempty" bson:"location,omitempty"`
-	DeviceInfo      *DeviceInfo       `json:"device_info,omitempty" bson:"device_info,omitempty"`
-	ReferenceID     string            `json:"reference_id" bson:"reference_id" validate:"required"`
-	Metadata        map[string]interface{} `bson:"metadata,omitempty" json:"metadata,omitempty"`
-	CreatedAt       time.Time         `json:"created_at" bson:"created_at"`
-	UpdatedAt       time.Time         `json:"updated_at" bson:"updated_at"`
+	ID            primitive.ObjectID     `bson:"_id" json:"id"`
+	AccountID     string                `bson:"account_id" json:"account_id" validate:"required"`
+	Amount        float64               `bson:"amount" json:"amount" validate:"required,gt=0"`
+	Currency      string                `bson:"currency" json:"currency" validate:"required,len=3"`
+	Type          TransactionType       `bson:"type" json:"type" validate:"required,oneof=DEBIT CREDIT"`
+	Status        TransactionStatus     `bson:"status" json:"status"`
+	ReferenceID   string                `bson:"reference_id" json:"reference_id" validate:"required"`
+	Description   string                `bson:"description,omitempty" json:"description,omitempty"`
+	MerchantID    string                `bson:"merchant_id,omitempty" json:"merchant_id,omitempty"`
+	MerchantName  string                `bson:"merchant_name,omitempty" json:"merchant_name,omitempty"`
+	Location      *Location             `bson:"location,omitempty" json:"location,omitempty"`
+	DeviceInfo    *DeviceInfo           `bson:"device_info,omitempty" json:"device_info,omitempty"`
+	Metadata      map[string]interface{} `bson:"metadata,omitempty" json:"metadata,omitempty"`
+	CreatedAt     time.Time             `bson:"created_at" json:"created_at"`
+	UpdatedAt     time.Time             `bson:"updated_at" json:"updated_at"`
 }
 
-// Location represents the geographical location of the transaction
+// Location chứa thông tin về vị trí giao dịch
 type Location struct {
-	Latitude  float64 `json:"latitude" bson:"latitude"`
-	Longitude float64 `json:"longitude" bson:"longitude"`
-	City      string  `json:"city" bson:"city"`
-	Country   string  `json:"country" bson:"country"`
-	IP        string  `json:"ip" bson:"ip"`
+	Country     string  `bson:"country" json:"country"`
+	City        string  `bson:"city,omitempty" json:"city,omitempty"`
+	PostalCode  string  `bson:"postal_code,omitempty" json:"postal_code,omitempty"`
+	Coordinates *Coordinates `bson:"coordinates,omitempty" json:"coordinates,omitempty"`
 }
 
-// DeviceInfo represents information about the device used for the transaction
+// Coordinates chứa thông tin về tọa độ
+type Coordinates struct {
+	Latitude  float64 `bson:"latitude" json:"latitude"`
+	Longitude float64 `bson:"longitude" json:"longitude"`
+}
+
+// DeviceInfo chứa thông tin về thiết bị thực hiện giao dịch
 type DeviceInfo struct {
-	DeviceID     string `json:"device_id" bson:"device_id"`
-	DeviceType   string `json:"device_type" bson:"device_type"`
-	DeviceOS     string `json:"device_os" bson:"device_os"`
-	DeviceBrand  string `json:"device_brand" bson:"device_brand"`
-	BrowserType  string `json:"browser_type" bson:"browser_type"`
-	IsMobile     bool   `json:"is_mobile" bson:"is_mobile"`
+	DeviceID    string `bson:"device_id,omitempty" json:"device_id,omitempty"`
+	DeviceType  string `bson:"device_type" json:"device_type"`
+	BrowserType string `bson:"browser_type" json:"browser_type"`
+	DeviceOS    string `bson:"device_os" json:"device_os"`
+	IsMobile    bool   `bson:"is_mobile" json:"is_mobile"`
+	IPAddress   string `bson:"ip_address,omitempty" json:"ip_address,omitempty"`
+	UserAgent   string `bson:"user_agent,omitempty" json:"user_agent,omitempty"`
 } 
