@@ -24,19 +24,22 @@ type transactionService struct {
 }
 
 // NewTransactionService tạo một instance mới của TransactionService
-func NewTransactionService(repo repository.TransactionRepository) TransactionService {
-	// Create Kafka producer
-	kafkaConfig := kafka.DefaultConfig()
-	producer, err := kafka.NewProducer(kafkaConfig)
-	if err != nil {
-		log.Printf("Failed to create Kafka producer: %v", err)
+func NewTransactionService(repo repository.TransactionRepository, producer kafka.Producer) TransactionService {
+	if producer == nil {
+		// Create default Kafka producer if none provided
+		kafkaConfig := kafka.DefaultConfig()
+		var err error
+		producer, err = kafka.NewProducer(kafkaConfig)
+		if err != nil {
+			log.Printf("Failed to create Kafka producer: %v", err)
+		}
 	}
 
 	return &transactionService{
-		repo:      repo,
-		validator: validator.New(),
+		repo:        repo,
+		validator:   validator.New(),
 		txValidator: NewTransactionValidator(),
-		producer:   producer,
+		producer:    producer,
 	}
 }
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -11,14 +12,16 @@ import (
 
 	"transaction-service/internal/domain"
 	mockRepo "transaction-service/internal/repository/mock"
+	mockKafka "transaction-service/internal/messaging/kafka/mock"
 	"transaction-service/internal/repository"
 )
 
 func TestTransactionService_CreateTransaction(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test input
 		input := CreateTransactionInput{
@@ -55,6 +58,7 @@ func TestTransactionService_CreateTransaction(t *testing.T) {
 		// Setup mock expectations
 		mockRepo.On("GetByReferenceID", mock.Anything, input.ReferenceID).Return(nil, repository.ErrNotFound)
 		mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(nil)
+		mockProducer.On("PublishEvent", mock.Anything, mock.AnythingOfType("*kafka.TransactionEvent")).Return(nil)
 
 		// Execute test
 		tx, err := service.CreateTransaction(context.Background(), input)
@@ -71,12 +75,14 @@ func TestTransactionService_CreateTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Duplicate_Transaction", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test input
 		input := CreateTransactionInput{
@@ -103,12 +109,60 @@ func TestTransactionService_CreateTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
+	})
+
+	t.Run("Kafka_Publish_Error", func(t *testing.T) {
+		// Setup mocks
+		mockRepo := new(mockRepo.MockTransactionRepository)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
+
+		// Create test input with all required fields
+		input := CreateTransactionInput{
+			AccountID:   "acc123",
+			Amount:      100.0,
+			Currency:    "USD",
+			Type:        domain.TransactionTypeDebit,
+			ReferenceID: "REF123",
+			Description: "Test transaction",
+			MerchantInfo: &MerchantInfo{
+				ID:       "merch123",
+				Name:     "Test Merchant",
+				Category: "retail",
+				Country:  "US",
+			},
+			Location: &domain.Location{
+				Country: "US",
+				City:    "New York",
+			},
+			DeviceInfo: &domain.DeviceInfo{
+				DeviceType: "mobile",
+				IPAddress: "192.168.1.1",
+			},
+		}
+
+		// Setup mock expectations
+		mockRepo.On("GetByReferenceID", mock.Anything, input.ReferenceID).Return(nil, repository.ErrNotFound)
+		mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(nil)
+		mockProducer.On("PublishEvent", mock.Anything, mock.AnythingOfType("*kafka.TransactionEvent")).Return(errors.New("kafka error"))
+
+		// Execute test
+		tx, err := service.CreateTransaction(context.Background(), input)
+		assert.NoError(t, err) // Transaction should still be created even if Kafka publish fails
+		assert.NotNil(t, tx)
+		assert.Equal(t, domain.StatusPending, tx.Status)
+
+		// Verify mock expectations
+		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Invalid_Input", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test input with missing required fields
 		input := CreateTransactionInput{
@@ -124,14 +178,16 @@ func TestTransactionService_CreateTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
 func TestTransactionService_UpdateTransaction(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data
 		txID := primitive.NewObjectID()
@@ -158,6 +214,7 @@ func TestTransactionService_UpdateTransaction(t *testing.T) {
 		// Setup mock expectations
 		mockRepo.On("GetByID", mock.Anything, txID.Hex()).Return(existingTx, nil)
 		mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*domain.Transaction")).Return(nil)
+		mockProducer.On("PublishEvent", mock.Anything, mock.AnythingOfType("*kafka.TransactionEvent")).Return(nil)
 
 		// Execute test
 		tx, err := service.UpdateTransaction(context.Background(), txID.Hex(), input)
@@ -169,12 +226,14 @@ func TestTransactionService_UpdateTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Invalid_Status_Transition", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data
 		txID := primitive.NewObjectID()
@@ -201,12 +260,14 @@ func TestTransactionService_UpdateTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Transaction_Not_Found", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data
 		txID := primitive.NewObjectID()
@@ -225,14 +286,16 @@ func TestTransactionService_UpdateTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
 func TestTransactionService_ListTransactions(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data
 		params := ListTransactionsParams{
@@ -271,12 +334,14 @@ func TestTransactionService_ListTransactions(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Invalid_Params", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data with invalid params
 		params := ListTransactionsParams{
@@ -293,14 +358,16 @@ func TestTransactionService_ListTransactions(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 }
 
 func TestTransactionService_GetTransaction(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data
 		txID := primitive.NewObjectID()
@@ -322,12 +389,14 @@ func TestTransactionService_GetTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 
 	t.Run("Not_Found", func(t *testing.T) {
-		// Setup mock repository
+		// Setup mocks
 		mockRepo := new(mockRepo.MockTransactionRepository)
-		service := NewTransactionService(mockRepo)
+		mockProducer := new(mockKafka.MockProducer)
+		service := NewTransactionService(mockRepo, mockProducer)
 
 		// Create test data
 		txID := primitive.NewObjectID()
@@ -343,5 +412,6 @@ func TestTransactionService_GetTransaction(t *testing.T) {
 
 		// Verify mock expectations
 		mockRepo.AssertExpectations(t)
+		mockProducer.AssertExpectations(t)
 	})
 } 
