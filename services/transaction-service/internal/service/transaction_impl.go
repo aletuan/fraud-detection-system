@@ -16,6 +16,7 @@ import (
 type transactionService struct {
 	repo      repository.TransactionRepository
 	validator *validator.Validate
+	txValidator *TransactionValidator
 	// TODO: Thêm Kafka producer sau
 }
 
@@ -24,6 +25,7 @@ func NewTransactionService(repo repository.TransactionRepository) TransactionSer
 	return &transactionService{
 		repo:      repo,
 		validator: validator.New(),
+		txValidator: NewTransactionValidator(),
 	}
 }
 
@@ -229,7 +231,30 @@ func (s *transactionService) ValidateTransaction(ctx context.Context, tx *domain
 		return fmt.Errorf("%w: %v", ErrInvalidInput, err)
 	}
 
-	// TODO: Implement additional business validation rules
+	// Thực hiện business validation
+	result, err := s.txValidator.ValidateTransaction(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to validate transaction: %w", err)
+	}
+
+	if !result.IsValid {
+		// Add validation results to metadata
+		if tx.Metadata == nil {
+			tx.Metadata = make(map[string]interface{})
+		}
+		tx.Metadata["validation_errors"] = result.Errors
+		tx.Metadata["risk_score"] = result.RiskScore
+
+		// Return first error as main error
+		if len(result.Errors) > 0 {
+			return fmt.Errorf("%w: %s - %s", 
+				ErrInvalidInput,
+				result.Errors[0].Code,
+				result.Errors[0].Message,
+			)
+		}
+	}
+
 	return nil
 }
 
