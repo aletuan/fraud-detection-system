@@ -40,12 +40,17 @@ type Config struct {
 		Username   string
 		Password   string
 	}
+
+	// Add Producer.Return.Successes
+	ProducerConfig struct {
+		ReturnSuccesses bool
+	}
 }
 
 // DefaultConfig returns default configuration
 func DefaultConfig() Config {
 	return Config{
-		Brokers:        []string{"localhost:9092"},
+		Brokers:        []string{"kafka:29092"},
 		Topic:          "transactions",
 		ClientID:       "transaction-service",
 		MaxMessageSize: 1000000, // 1MB
@@ -57,7 +62,14 @@ func DefaultConfig() Config {
 		RetryBackoff:   100 * time.Millisecond,
 		FlushFrequency: 500 * time.Millisecond,
 		FlushMessages:  100,
-		FlushBytes:     1000000, // 1MB
+		FlushBytes:     1000000, // 1MB,
+		
+		// Add Producer.Return.Successes
+		ProducerConfig: struct {
+			ReturnSuccesses bool
+		}{
+			ReturnSuccesses: true,
+		},
 	}
 }
 

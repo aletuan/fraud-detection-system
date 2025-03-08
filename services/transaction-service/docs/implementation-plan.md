@@ -58,8 +58,8 @@
   - [x] JSON serialization
   - [x] Schema validation
   - [x] Backward compatibility
-- [ ] Publishing logic
-  - [ ] Retry mechanism
+- [x] Publishing logic
+  - [x] Retry mechanism
   - [ ] Dead letter queue
   - [ ] Monitoring
 

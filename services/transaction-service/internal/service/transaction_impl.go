@@ -12,21 +12,31 @@ import (
 
 	"transaction-service/internal/domain"
 	"transaction-service/internal/repository"
+	"transaction-service/internal/messaging/kafka"
 )
 
 type transactionService struct {
 	repo      repository.TransactionRepository
 	validator *validator.Validate
 	txValidator *TransactionValidator
+	producer   kafka.Producer
 	// TODO: Thêm Kafka producer sau
 }
 
 // NewTransactionService tạo một instance mới của TransactionService
 func NewTransactionService(repo repository.TransactionRepository) TransactionService {
+	// Create Kafka producer
+	kafkaConfig := kafka.DefaultConfig()
+	producer, err := kafka.NewProducer(kafkaConfig)
+	if err != nil {
+		log.Printf("Failed to create Kafka producer: %v", err)
+	}
+
 	return &transactionService{
 		repo:      repo,
 		validator: validator.New(),
 		txValidator: NewTransactionValidator(),
+		producer:   producer,
 	}
 }
 
@@ -273,7 +283,36 @@ func (s *transactionService) EnrichTransactionData(ctx context.Context, tx *doma
 
 // PublishTransactionEvent publish event cho Kafka
 func (s *transactionService) PublishTransactionEvent(ctx context.Context, tx *domain.Transaction, eventType EventType) error {
-	// TODO: Implement Kafka producer logic
+	if s.producer == nil {
+		log.Printf("Kafka producer not initialized")
+		return nil // Skip publishing if producer is not available
+	}
+
+	// Create event metadata
+	metadata := kafka.EventMetadata{
+		Source: "transaction-service",
+	}
+
+	// Add correlation ID from context if available
+	if corrID, ok := ctx.Value("correlation_id").(string); ok {
+		metadata.CorrelationID = corrID
+	}
+
+	// Add user ID from context if available  
+	if userID, ok := ctx.Value("user_id").(string); ok {
+		metadata.UserID = userID
+	}
+
+	// Create Kafka event
+	event := kafka.NewTransactionEvent(kafka.EventType(eventType), tx, metadata)
+
+	// Publish event
+	if err := s.producer.PublishEvent(ctx, event); err != nil {
+		log.Printf("Failed to publish transaction event: %v", err)
+		return fmt.Errorf("%w: %v", ErrPublishEventFailed, err)
+	}
+
+	log.Printf("Published transaction event - Type: %s, ID: %s", eventType, tx.ID.Hex())
 	return nil
 }
 

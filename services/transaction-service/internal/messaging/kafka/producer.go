@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/IBM/sarama"
 )
@@ -38,12 +39,20 @@ func NewProducer(config Config) (Producer, error) {
 	saramaConfig.Producer.Compression = getCompressionCodec(config.Compression)
 	saramaConfig.Producer.Retry.Max = config.MaxRetries
 	saramaConfig.Producer.Retry.Backoff = config.RetryBackoff
+	saramaConfig.Producer.Return.Successes = config.ProducerConfig.ReturnSuccesses
 
 	// Set client configuration
 	saramaConfig.ClientID = config.ClientID
 	saramaConfig.Net.DialTimeout = config.Timeout
 	saramaConfig.Net.ReadTimeout = config.Timeout
 	saramaConfig.Net.WriteTimeout = config.Timeout
+	saramaConfig.Net.MaxOpenRequests = 5
+	saramaConfig.Net.KeepAlive = 30 * time.Second
+
+	// Disable metadata auto refresh to prevent localhost resolution
+	saramaConfig.Metadata.RefreshFrequency = 0
+	saramaConfig.Metadata.Full = false
+	saramaConfig.Metadata.Retry.Max = 0
 
 	// Configure TLS if enabled
 	if config.TLS.Enabled {
