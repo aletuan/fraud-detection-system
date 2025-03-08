@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -50,12 +49,14 @@ func TestMongoRepository(t *testing.T) {
 
 		tx := &domain.Transaction{
 			ID:          primitive.NewObjectID(),
-			AccountID:   "ACC123",
+			AccountID:   "acc123",
 			Amount:      100.50,
 			Currency:    "USD",
-			Type:        domain.TypeDebit,
+			Type:        domain.TransactionTypeDebit,
 			Status:      domain.StatusPending,
-			ReferenceID: fmt.Sprintf("REF-%s", primitive.NewObjectID().Hex()),
+			ReferenceID: "REF-" + primitive.NewObjectID().Hex(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
 
 		err := repo.Create(ctx, tx)
@@ -73,12 +74,14 @@ func TestMongoRepository(t *testing.T) {
 
 		tx := &domain.Transaction{
 			ID:          primitive.NewObjectID(),
-			AccountID:   "ACC123",
+			AccountID:   "acc123",
 			Amount:      100.50,
 			Currency:    "USD",
-			Type:        domain.TypeDebit,
+			Type:        domain.TransactionTypeDebit,
 			Status:      domain.StatusPending,
-			ReferenceID: fmt.Sprintf("REF-%s", primitive.NewObjectID().Hex()),
+			ReferenceID: "REF-" + primitive.NewObjectID().Hex(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
 
 		err := repo.Create(ctx, tx)
@@ -101,12 +104,14 @@ func TestMongoRepository(t *testing.T) {
 
 		tx := &domain.Transaction{
 			ID:          primitive.NewObjectID(),
-			AccountID:   "ACC123",
+			AccountID:   "acc123",
 			Amount:      100.50,
 			Currency:    "USD",
-			Type:        domain.TypeDebit,
+			Type:        domain.TransactionTypeDebit,
 			Status:      domain.StatusPending,
-			ReferenceID: fmt.Sprintf("REF-%s", primitive.NewObjectID().Hex()),
+			ReferenceID: "REF-" + primitive.NewObjectID().Hex(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
 
 		err := repo.Create(ctx, tx)
@@ -126,13 +131,14 @@ func TestMongoRepository(t *testing.T) {
 		for i := 0; i < 15; i++ {
 			tx := &domain.Transaction{
 				ID:          primitive.NewObjectID(),
-				AccountID:   "ACC123",
-				Amount:      100.50 + float64(i),
+				AccountID:   "acc123",
+				Amount:      100.50,
 				Currency:    "USD",
-				Type:        domain.TypeDebit,
+				Type:        domain.TransactionTypeDebit,
 				Status:      domain.StatusPending,
+				ReferenceID: "REF-" + primitive.NewObjectID().Hex(),
 				CreatedAt:   time.Now(),
-				ReferenceID: fmt.Sprintf("REF-%s-%d", primitive.NewObjectID().Hex(), i),
+				UpdatedAt:   time.Now(),
 			}
 			err := repo.Create(ctx, tx)
 			require.NoError(t, err)
@@ -155,7 +161,7 @@ func TestMongoRepository(t *testing.T) {
 		require.NoError(t, cleanupCollection(repo.collection))
 
 		// Create transactions for different accounts
-		accounts := []string{"ACC1", "ACC2"}
+		accounts := []string{"acc1", "acc2", "acc3"}
 		for _, acc := range accounts {
 			for i := 0; i < 5; i++ {
 				tx := &domain.Transaction{
@@ -163,9 +169,11 @@ func TestMongoRepository(t *testing.T) {
 					AccountID:   acc,
 					Amount:      100.50,
 					Currency:    "USD",
-					Type:        domain.TypeDebit,
+					Type:        domain.TransactionTypeDebit,
 					Status:      domain.StatusPending,
-					ReferenceID: fmt.Sprintf("REF-%s-%s-%d", acc, primitive.NewObjectID().Hex(), i),
+					ReferenceID: "REF-" + primitive.NewObjectID().Hex(),
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
 				}
 				err := repo.Create(ctx, tx)
 				require.NoError(t, err)
@@ -173,7 +181,7 @@ func TestMongoRepository(t *testing.T) {
 		}
 
 		params := repository.NewListParams()
-		transactions, total, err := repo.GetByAccountID(ctx, "ACC1", params)
+		transactions, total, err := repo.GetByAccountID(ctx, "acc1", params)
 		require.NoError(t, err)
 		assert.Equal(t, 5, len(transactions))
 		assert.Equal(t, int64(5), total)

@@ -6,21 +6,21 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// TransactionStatus represents the current status of a transaction
+// TransactionType represents the type of transaction
+type TransactionType string
+
+const (
+	TransactionTypeDebit  TransactionType = "debit"
+	TransactionTypeCredit TransactionType = "credit"
+)
+
+// TransactionStatus represents the status of transaction
 type TransactionStatus string
 
 const (
 	StatusPending   TransactionStatus = "pending"
 	StatusCompleted TransactionStatus = "completed"
 	StatusFailed    TransactionStatus = "failed"
-)
-
-// TransactionType represents the type of transaction
-type TransactionType string
-
-const (
-	TypeDebit  TransactionType = "debit"
-	TypeCredit TransactionType = "credit"
 )
 
 // Transaction represents a financial transaction
@@ -30,13 +30,14 @@ type Transaction struct {
 	Amount          float64           `json:"amount" bson:"amount" validate:"required,gt=0"`
 	Currency        string            `json:"currency" bson:"currency" validate:"required,len=3"`
 	Type            TransactionType   `json:"type" bson:"type" validate:"required,oneof=debit credit"`
-	Status          TransactionStatus `json:"status" bson:"status"`
+	Status          TransactionStatus `json:"status" bson:"status" validate:"required"`
 	Description     string            `json:"description" bson:"description"`
 	MerchantID      string            `json:"merchant_id" bson:"merchant_id"`
 	MerchantName    string            `json:"merchant_name" bson:"merchant_name"`
 	Location        *Location         `json:"location,omitempty" bson:"location,omitempty"`
 	DeviceInfo      *DeviceInfo       `json:"device_info,omitempty" bson:"device_info,omitempty"`
-	ReferenceID     string            `json:"reference_id" bson:"reference_id"`
+	ReferenceID     string            `json:"reference_id" bson:"reference_id" validate:"required"`
+	Metadata        map[string]interface{} `bson:"metadata,omitempty" json:"metadata,omitempty"`
 	CreatedAt       time.Time         `json:"created_at" bson:"created_at"`
 	UpdatedAt       time.Time         `json:"updated_at" bson:"updated_at"`
 }
