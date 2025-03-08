@@ -17,7 +17,30 @@ Priority: High
   - [ ] Order guarantee
   - [ ] Transaction correlation
 
-### 2. Fraud Detection Rules Engine
+### 2. Risk Assessment Engine
+Priority: High
+- [ ] Data enrichment
+  - [ ] Geographic information
+  - [ ] IP to location mapping
+  - [ ] Time zone validation
+  - [ ] Merchant profiling
+- [ ] Risk factor analysis
+  - [ ] Transaction amount risk
+  - [ ] Location-based risk
+  - [ ] Time-based risk
+  - [ ] Device-based risk
+- [ ] Account risk assessment
+  - [ ] Historical behavior
+  - [ ] Account age and status
+  - [ ] Previous fraud cases
+  - [ ] Transaction patterns
+- [ ] Combined risk scoring
+  - [ ] Weight configuration
+  - [ ] Score normalization
+  - [ ] Risk level classification
+  - [ ] Score explanation
+
+### 3. Fraud Detection Rules Engine
 Priority: High
 - [ ] Rule definitions
   - [ ] Rule schema & validation
@@ -38,7 +61,7 @@ Priority: High
   - [ ] Rule testing
   - [ ] Rule deployment
 
-### 3. Machine Learning Pipeline
+### 4. Machine Learning Pipeline
 Priority: Medium
 - [ ] Feature engineering
   - [ ] Transaction features
@@ -59,34 +82,18 @@ Priority: Medium
   - [ ] Model retraining
   - [ ] Performance tracking
 
-### 4. Risk Scoring
+### 5. Event Publishing
 Priority: High
-- [ ] Scoring components
-  - [ ] Rule-based score
-  - [ ] ML model score
-  - [ ] Historical patterns
-  - [ ] Account risk
-- [ ] Score aggregation
-  - [ ] Weight configuration
-  - [ ] Score normalization
-  - [ ] Threshold management
-- [ ] Score explanation
-  - [ ] Factor breakdown
-  - [ ] Risk indicators
-  - [ ] Recommendation
-
-### 5. Alert Generation
-Priority: High
-- [ ] Alert types
-  - [ ] High risk alerts
-  - [ ] Pattern alerts
-  - [ ] Threshold alerts
-  - [ ] ML-based alerts
-- [ ] Alert enrichment
+- [ ] Event types
+  - [ ] Risk assessment completed
+  - [ ] Fraud detected
+  - [ ] Suspicious activity
+  - [ ] Pattern detected
+- [ ] Event enrichment
   - [ ] Risk factors
-  - [ ] Historical context
   - [ ] Recommended actions
-- [ ] Alert publishing
+  - [ ] Evidence data
+- [ ] Publishing
   - [ ] Kafka producer
   - [ ] Error handling
   - [ ] Retry mechanism
@@ -112,12 +119,12 @@ Priority: High
 Priority: Medium
 - [ ] REST API
   - [ ] Rule management
+  - [ ] Risk assessment
   - [ ] Model management
-  - [ ] Manual review
 - [ ] GraphQL API
   - [ ] Risk queries
-  - [ ] Alert subscription
-  - [ ] Analytics
+  - [ ] Rule queries
+  - [ ] Analytics queries
 - [ ] Authentication & Authorization
   - [ ] API keys
   - [ ] Role-based access
@@ -126,21 +133,17 @@ Priority: Medium
 ### 3. Monitoring & Observability
 Priority: High
 - [ ] Metrics
-  - [ ] Business metrics
-  - [ ] Technical metrics
-  - [ ] SLIs/SLOs
+  - [ ] Risk assessment metrics
+  - [ ] Rule execution metrics
+  - [ ] Model performance metrics
 - [ ] Logging
   - [ ] Structured logging
   - [ ] Log aggregation
   - [ ] Log correlation
-- [ ] Alerting
+- [ ] Health Checks
   - [ ] Service health
-  - [ ] Performance
-  - [ ] Error rates
-- [ ] Dashboards
-  - [ ] Operational metrics
-  - [ ] Business metrics
-  - [ ] ML metrics
+  - [ ] Dependencies health
+  - [ ] Model health
 
 ### 4. Development Environment
 Priority: High
@@ -164,6 +167,7 @@ Priority: High
 - [ ] API documentation
 - [ ] Data models
 - [ ] Event schemas
+- [ ] Integration guide
 
 ### 2. Operational Documentation
 - [ ] Setup guide
@@ -172,7 +176,7 @@ Priority: High
 - [ ] Runbooks
 
 ### 3. Business Documentation
+- [ ] Risk scoring methodology
 - [ ] Rule documentation
 - [ ] Model documentation
-- [ ] Alert types
-- [ ] Risk scoring 
+- [ ] Integration patterns 

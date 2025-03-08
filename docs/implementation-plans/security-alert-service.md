@@ -37,25 +37,21 @@ Priority: High
   - [ ] Manual actions
   - [ ] Escalation paths
 
-### 3. Notification System
+### 3. Event Publishing
 Priority: High
-- [ ] Notification channels
-  - [ ] Email integration
-  - [ ] SMS integration
-  - [ ] Push notifications
-  - [ ] Webhook support
-- [ ] Template management
-  - [ ] Template creation
-  - [ ] Variable substitution
-  - [ ] Localization
-- [ ] Delivery tracking
+- [ ] Event types
+  - [ ] Alert created
+  - [ ] Alert updated
+  - [ ] Action required
+  - [ ] Case created
+- [ ] Event enrichment
+  - [ ] Alert context
+  - [ ] Required actions
+  - [ ] Priority level
+- [ ] Publishing
+  - [ ] Kafka producer
+  - [ ] Error handling
   - [ ] Retry mechanism
-  - [ ] Delivery confirmation
-  - [ ] Failure handling
-- [ ] Rate limiting
-  - [ ] Channel limits
-  - [ ] User preferences
-  - [ ] Quiet hours
 
 ### 4. Case Management
 Priority: Medium
@@ -117,7 +113,7 @@ Priority: High
 - [ ] GraphQL API
   - [ ] Alert queries
   - [ ] Case queries
-  - [ ] Analytics
+  - [ ] Analytics queries
 - [ ] Authentication & Authorization
   - [ ] API keys
   - [ ] Role-based access
@@ -133,14 +129,10 @@ Priority: High
   - [ ] Structured logging
   - [ ] Log aggregation
   - [ ] Log correlation
-- [ ] Alerting
+- [ ] Health Checks
   - [ ] Service health
-  - [ ] Performance
-  - [ ] Error rates
-- [ ] Dashboards
-  - [ ] Alert dashboard
-  - [ ] Case dashboard
-  - [ ] Performance dashboard
+  - [ ] Dependencies health
+  - [ ] Custom metrics
 
 ### 4. Development Environment
 Priority: High
@@ -164,6 +156,7 @@ Priority: High
 - [ ] API documentation
 - [ ] Data models
 - [ ] Event schemas
+- [ ] Integration guide
 
 ### 2. Operational Documentation
 - [ ] Setup guide

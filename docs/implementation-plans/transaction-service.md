@@ -39,11 +39,12 @@
   - [x] Known device checks
   - [x] Device risk assessment
   - [x] Browser/OS validation
-- [x] Risk Score Calculation
-  - [x] Amount-based risk score (30%)
-  - [x] Missing information risk score (30%)
-  - [x] Unknown information risk score (20%)
-  - [x] Validation rules risk score (20%)
+- [x] Initial Risk Assessment
+  - [x] Basic validation rules (30%)
+  - [x] Missing information check (30%)
+  - [x] Unknown information check (20%)
+  - [x] Validation rules check (20%)
+  - [ ] Integration with Fraud Detection Service for final risk score
 
 ### 5. Kafka Integration
 - [x] Kafka producer setup
@@ -107,43 +108,32 @@ Priority: High
 ```go
 func (s *transactionService) ProcessTransaction(ctx context.Context, tx *domain.Transaction) error
 ```
-- [ ] Account limits checking
-  - [ ] Available balance
-  - [ ] Transaction limits
-  - [ ] Account status validation
-- [ ] Transaction frequency checks
-  - [ ] Time-based limits
-  - [ ] Pattern detection
-- [ ] Business rules by transaction type
-  - [ ] Debit rules
-  - [ ] Credit rules
-  - [ ] Special transaction handling
-- [ ] Special cases handling
-  - [ ] High-value transactions
-  - [ ] International transactions
-  - [ ] First-time transactions
+- [ ] Basic validation
+  - [ ] Input validation
+  - [ ] Business rules validation
+  - [ ] Status validation
+- [ ] Event publishing
+  - [ ] Publish to Fraud Detection Service
+  - [ ] Wait for risk assessment
+  - [ ] Update transaction status
+- [ ] Response handling
+  - [ ] Handle fraud detection response
+  - [ ] Handle timeout scenarios
+  - [ ] Update transaction status
 
-### 2. EnrichTransactionData
-Priority: Medium
-```go
-func (s *transactionService) EnrichTransactionData(ctx context.Context, tx *domain.Transaction) error
-```
-- [ ] Geographic information
-  - [ ] IP to location
-  - [ ] Location risk scoring
-  - [ ] Time zone validation
-- [ ] Merchant categorization
-  - [ ] MCC code validation
-  - [ ] Business category enrichment
-  - [ ] Merchant risk profiling
-- [ ] Risk scoring
-  - [ ] Transaction risk score
-  - [ ] Account risk score
-  - [ ] Combined risk assessment
-- [ ] Additional metadata
-  - [ ] Transaction context
-  - [ ] Historical patterns
-  - [ ] Related transactions
+### 2. External Service Integration
+Priority: High
+- [ ] Fraud Detection Service
+  - [ ] Send transaction data
+  - [ ] Receive risk assessment
+  - [ ] Handle responses
+- [ ] Account Service
+  - [ ] Check account status
+  - [ ] Verify balance
+  - [ ] Update balance
+- [ ] Customer Notification Service
+  - [ ] Send transaction events
+  - [ ] Handle notification failures
 
 ### 3. Monitoring & Observability
 Priority: High
@@ -155,14 +145,10 @@ Priority: High
   - [ ] Structured logging
   - [ ] Log aggregation
   - [ ] Log correlation
-- [ ] Alerting System
-  - [ ] Error rate alerts
-  - [ ] Performance alerts
-  - [ ] Business alerts
-- [ ] Dashboards
-  - [ ] Transaction overview
-  - [ ] Error tracking
-  - [ ] Performance monitoring
+- [ ] Health Checks
+  - [ ] Service health
+  - [ ] Dependencies health
+  - [ ] Custom health metrics
 
 ### 4. Security Enhancements
 Priority: High
@@ -194,6 +180,7 @@ Priority: High
 - [ ] Configuration guide
 - [ ] Development setup guide
 - [ ] Testing guide
+- [ ] Service integration guide
 
 ### Operational Documentation
 - [ ] Deployment guide
