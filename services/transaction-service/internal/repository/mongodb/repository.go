@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,7 +20,17 @@ type mongoRepository struct {
 
 // NewMongoRepository creates a new MongoDB repository
 func NewMongoRepository(db *mongo.Database) repository.TransactionRepository {
-	collection := db.Collection("transactions")
+	// Create collection if it doesn't exist
+	collectionName := "transactions"
+	err := db.CreateCollection(context.Background(), collectionName)
+	if err != nil {
+		// Ignore error if collection already exists
+		if !strings.Contains(err.Error(), "already exists") {
+			panic(err)
+		}
+	}
+
+	collection := db.Collection(collectionName)
 	
 	// Create indexes
 	indexes := []mongo.IndexModel{
@@ -42,7 +53,7 @@ func NewMongoRepository(db *mongo.Database) repository.TransactionRepository {
 		},
 	}
 
-	_, err := collection.Indexes().CreateMany(context.Background(), indexes)
+	_, err = collection.Indexes().CreateMany(context.Background(), indexes)
 	if err != nil {
 		panic(err) // In production, handle this error appropriately
 	}

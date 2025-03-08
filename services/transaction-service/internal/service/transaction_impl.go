@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -32,15 +33,18 @@ func NewTransactionService(repo repository.TransactionRepository) TransactionSer
 // CreateTransaction tạo một giao dịch mới
 func (s *transactionService) CreateTransaction(ctx context.Context, input CreateTransactionInput) (*domain.Transaction, error) {
 	if err := s.validator.Struct(input); err != nil {
+		log.Printf("Invalid input data: %v", err)
 		return nil, fmt.Errorf("%w: %v", ErrInvalidInput, err)
 	}
 
 	// Kiểm tra giao dịch trùng lặp
 	existing, err := s.repo.GetByReferenceID(ctx, input.ReferenceID)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
+		log.Printf("Failed to check duplicate transaction: %v", err)
 		return nil, fmt.Errorf("failed to check duplicate transaction: %w", err)
 	}
 	if existing != nil {
+		log.Printf("Duplicate transaction found with reference ID: %s", input.ReferenceID)
 		return nil, ErrDuplicateTransaction
 	}
 
@@ -83,21 +87,24 @@ func (s *transactionService) CreateTransaction(ctx context.Context, input Create
 
 	// Validate và làm giàu dữ liệu
 	if err := s.ValidateTransaction(ctx, tx); err != nil {
+		log.Printf("Transaction validation failed: %v", err)
 		return nil, err
 	}
 	if err := s.EnrichTransactionData(ctx, tx); err != nil {
+		log.Printf("Failed to enrich transaction data: %v", err)
 		return nil, err
 	}
 
 	// Lưu vào database
 	if err := s.repo.Create(ctx, tx); err != nil {
+		log.Printf("Failed to create transaction in database: %v", err)
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
 	// Publish event
 	if err := s.PublishTransactionEvent(ctx, tx, EventTypeCreated); err != nil {
 		// Log error nhưng không fail operation
-		fmt.Printf("failed to publish transaction created event: %v\n", err)
+		log.Printf("Failed to publish transaction created event: %v", err)
 	}
 
 	return tx, nil
