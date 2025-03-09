@@ -1,3 +1,0 @@
-"""
-Core models and utilities
-""" 

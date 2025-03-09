@@ -26,6 +26,31 @@ services:
       timeout: 5s
       retries: 3
 
+  fraud-detection:
+    build:
+      context: ./services/fraud-detection
+      dockerfile: Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_CONSUMER_GROUP=fraud-detection-group
+      - KAFKA_TRANSACTION_TOPIC=transactions
+      - KAFKA_DLQ_TOPIC=fraud.detection.dlq
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - LOG_LEVEL=INFO
+    depends_on:
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks:
+      - transaction-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     ports:

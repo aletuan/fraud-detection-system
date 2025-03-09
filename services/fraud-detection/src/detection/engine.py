@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from ..core.models import Transaction
+from core.models import Transaction
 
 @dataclass
 class DetectionResult:

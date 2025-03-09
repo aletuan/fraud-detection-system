@@ -5,9 +5,9 @@ from datetime import datetime
 
 from .consumer import KafkaConsumer
 from .config import KafkaConfig
-from ..core.models import Transaction
-from ..detection.engine import FraudDetectionEngine
-from ..config import settings
+from core.models import Transaction
+from detection.engine import FraudDetectionEngine
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +58,21 @@ class TransactionConsumer:
             message: Transaction event message
         """
         try:
+            # Extract transaction data from event wrapper
+            event_data = json.loads(message) if isinstance(message, str) else message
+            transaction_data = event_data.get('transaction', {})
+            
             # Convert message to Transaction model
             transaction = Transaction(
-                id=message.get('id'),
-                amount=message.get('amount'),
-                currency=message.get('currency'),
-                merchant=message.get('merchant'),
-                location=message.get('location'),
-                device_id=message.get('device_id'),
-                timestamp=datetime.fromisoformat(message.get('timestamp')),
-                status=message.get('status'),
-                user_id=message.get('user_id')
+                id=transaction_data.get('id'),
+                amount=transaction_data.get('amount'),
+                currency=transaction_data.get('currency'),
+                merchant=transaction_data.get('merchant_name', ''),
+                location=transaction_data.get('location', {}),
+                device_id=transaction_data.get('device_info', {}).get('device_id', ''),
+                timestamp=datetime.fromisoformat(transaction_data.get('created_at')),
+                status=transaction_data.get('status'),
+                user_id=transaction_data.get('account_id')
             )
             
             # Process transaction through detection engine
