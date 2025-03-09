@@ -62,11 +62,10 @@ class Transaction:
     status: TransactionStatus
     reference_id: str
     created_at: datetime
-    location: Optional[Location] = None
-    device_info: Optional[DeviceInfo] = None
     merchant_id: Optional[str] = None
     merchant_name: Optional[str] = None
-    description: Optional[str] = None
+    location: Optional[Location] = None
+    device_info: Optional[DeviceInfo] = None
     metadata: Optional[Dict[str, Any]] = None
 
 @dataclass

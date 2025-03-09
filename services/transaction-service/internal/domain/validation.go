@@ -54,23 +54,14 @@ type ValidationError struct {
 type ValidationResult struct {
 	IsValid  bool              // Kết quả validation
 	Errors   []ValidationError // Danh sách lỗi
-	RiskScore float64          // Điểm đánh giá rủi ro
-	Metadata  map[string]interface{} // Thông tin bổ sung
+	Metadata map[string]interface{} // Thông tin bổ sung
 }
 
 // Validation error codes
 const (
-	ErrCodeAmountLimit       = "AMOUNT_LIMIT_EXCEEDED"
-	ErrCodeDailyLimit       = "DAILY_LIMIT_EXCEEDED"
-	ErrCodeMonthlyLimit     = "MONTHLY_LIMIT_EXCEEDED"
-	ErrCodeInvalidCurrency  = "INVALID_CURRENCY"
-	ErrCodeInvalidTime      = "INVALID_TIME"
-	ErrCodeBlockedMerchant  = "BLOCKED_MERCHANT"
-	ErrCodeBlockedLocation  = "BLOCKED_LOCATION"
-	ErrCodeVelocityLimit    = "VELOCITY_LIMIT_EXCEEDED"
-	ErrCodeBlockedDevice    = "BLOCKED_DEVICE"
-	ErrCodeDeviceLimit      = "DEVICE_LIMIT_EXCEEDED"
-	ErrCodeHighRisk         = "HIGH_RISK_TRANSACTION"
+	ErrCodeInvalidInput = "INVALID_INPUT"
+	ErrCodeDuplicate    = "DUPLICATE_TRANSACTION"
+	ErrCodeNotFound     = "TRANSACTION_NOT_FOUND"
 )
 
 // Risk score thresholds

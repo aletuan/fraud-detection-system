@@ -45,7 +45,7 @@ class BaseRule(ABC):
         return RuleResult(
             rule_name=self.name,
             is_fraudulent=is_fraudulent,
-            risk_score=risk_score * self.weight,
+            risk_score=risk_score,
             reason=reason,
             metadata=metadata
         ) 

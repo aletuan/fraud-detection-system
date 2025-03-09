@@ -24,27 +24,31 @@
 - [x] Unit tests for repository
 
 ### 4. ValidateTransaction
-- [x] Currency and amount limits validation
-  - [x] Maximum amount per transaction
-  - [ ] Daily/Monthly limits (TODO)
-  - [x] Currency specific rules
-- [x] Location validation
-  - [x] Suspicious locations
-  - [ ] Velocity checks (TODO)
-- [x] Merchant validation
-  - [x] Merchant category rules
-  - [x] High-risk merchant checks
-  - [x] Merchant location validation
-- [x] Device validation
-  - [x] Known device checks
-  - [x] Device risk assessment
-  - [x] Browser/OS validation
-- [x] Initial Risk Assessment
-  - [x] Basic validation rules (30%)
-  - [x] Missing information check (30%)
-  - [x] Unknown information check (20%)
-  - [x] Validation rules check (20%)
-  - [ ] Integration with Fraud Detection Service for final risk score
+- [x] Basic field validation
+  - [x] Required fields check
+  - [x] Data format validation
+  - [x] Input sanitization
+- [-] Currency and amount limits validation (Moved to Fraud Detection Service)
+  - [-] Maximum amount per transaction
+  - [-] Daily/Monthly limits
+  - [-] Currency specific rules
+- [-] Location validation (Moved to Fraud Detection Service)
+  - [-] Suspicious locations
+  - [-] Velocity checks
+- [-] Merchant validation (Moved to Fraud Detection Service)
+  - [-] Merchant category rules
+  - [-] High-risk merchant checks
+  - [-] Merchant location validation
+- [-] Device validation (Moved to Fraud Detection Service)
+  - [-] Known device checks
+  - [-] Device risk assessment
+  - [-] Browser/OS validation
+- [-] Risk Assessment (Moved to Fraud Detection Service)
+  - [-] Basic validation rules
+  - [-] Missing information check
+  - [-] Unknown information check
+  - [-] Validation rules check
+  - [x] Integration with Fraud Detection Service for risk assessment
 
 ### 5. Kafka Integration
 - [x] Kafka producer setup

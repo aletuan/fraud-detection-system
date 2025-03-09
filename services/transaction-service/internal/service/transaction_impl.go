@@ -18,9 +18,7 @@ import (
 type transactionService struct {
 	repo      repository.TransactionRepository
 	validator *validator.Validate
-	txValidator *TransactionValidator
-	producer   kafka.Producer
-	// TODO: Thêm Kafka producer sau
+	producer  kafka.Producer
 }
 
 // NewTransactionService tạo một instance mới của TransactionService
@@ -36,10 +34,9 @@ func NewTransactionService(repo repository.TransactionRepository, producer kafka
 	}
 
 	return &transactionService{
-		repo:        repo,
-		validator:   validator.New(),
-		txValidator: NewTransactionValidator(),
-		producer:    producer,
+		repo:      repo,
+		validator: validator.New(),
+		producer:  producer,
 	}
 }
 
@@ -98,25 +95,20 @@ func (s *transactionService) CreateTransaction(ctx context.Context, input Create
 		}
 	}
 
-	// Validate và làm giàu dữ liệu
+	// Validate basic transaction data
 	if err := s.ValidateTransaction(ctx, tx); err != nil {
 		log.Printf("Transaction validation failed: %v", err)
 		return nil, err
 	}
-	if err := s.EnrichTransactionData(ctx, tx); err != nil {
-		log.Printf("Failed to enrich transaction data: %v", err)
-		return nil, err
-	}
 
-	// Lưu vào database
+	// Lưu transaction vào database
 	if err := s.repo.Create(ctx, tx); err != nil {
-		log.Printf("Failed to create transaction in database: %v", err)
+		log.Printf("Failed to create transaction: %v", err)
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
 	}
 
 	// Publish event
 	if err := s.PublishTransactionEvent(ctx, tx, EventTypeCreated); err != nil {
-		// Log error nhưng không fail operation
 		log.Printf("Failed to publish transaction created event: %v", err)
 	}
 
@@ -130,14 +122,17 @@ func (s *transactionService) UpdateTransaction(ctx context.Context, id string, i
 	}
 
 	// Lấy transaction hiện tại
-	tx, err := s.GetTransaction(ctx, id)
+	tx, err := s.repo.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, ErrTransactionNotFound
+		}
+		return nil, fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	// Validate status transition
+	// Kiểm tra trạng thái chuyển đổi
 	if !isValidStatusTransition(tx.Status, input.Status) {
-		return nil, fmt.Errorf("%w: cannot transition from %s to %s", ErrInvalidStatus, tx.Status, input.Status)
+		return nil, ErrInvalidStatus
 	}
 
 	// Cập nhật thông tin
@@ -160,7 +155,7 @@ func (s *transactionService) UpdateTransaction(ctx context.Context, id string, i
 		return nil, fmt.Errorf("failed to update transaction: %w", err)
 	}
 
-	// Publish event based on status
+	// Xác định loại event
 	var eventType EventType
 	switch input.Status {
 	case domain.StatusCompleted:
@@ -171,8 +166,9 @@ func (s *transactionService) UpdateTransaction(ctx context.Context, id string, i
 		eventType = EventTypeUpdated
 	}
 
+	// Publish event
 	if err := s.PublishTransactionEvent(ctx, tx, eventType); err != nil {
-		fmt.Printf("failed to publish transaction update event: %v\n", err)
+		log.Printf("Failed to publish transaction update event: %v", err)
 	}
 
 	return tx, nil
@@ -250,31 +246,6 @@ func (s *transactionService) ValidateTransaction(ctx context.Context, tx *domain
 	if err := s.validator.Struct(tx); err != nil {
 		return fmt.Errorf("%w: %v", ErrInvalidInput, err)
 	}
-
-	// Thực hiện business validation
-	result, err := s.txValidator.ValidateTransaction(ctx, tx)
-	if err != nil {
-		return fmt.Errorf("failed to validate transaction: %w", err)
-	}
-
-	if !result.IsValid {
-		// Add validation results to metadata
-		if tx.Metadata == nil {
-			tx.Metadata = make(map[string]interface{})
-		}
-		tx.Metadata["validation_errors"] = result.Errors
-		tx.Metadata["risk_score"] = result.RiskScore
-
-		// Return first error as main error
-		if len(result.Errors) > 0 {
-			return fmt.Errorf("%w: %s - %s", 
-				ErrInvalidInput,
-				result.Errors[0].Code,
-				result.Errors[0].Message,
-			)
-		}
-	}
-
 	return nil
 }
 
