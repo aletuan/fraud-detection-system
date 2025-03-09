@@ -13,6 +13,7 @@ import (
 	"transaction-service/internal/api"
 	"transaction-service/internal/repository/mongodb"
 	"transaction-service/internal/service"
+	"transaction-service/internal/messaging/kafka"
 )
 
 func main() {
@@ -35,8 +36,23 @@ func main() {
 	db := client.Database(dbName)
 	repo := mongodb.NewMongoRepository(db)
 
+	// Initialize Kafka producer
+	kafkaConfig := kafka.DefaultConfig()
+	producer, err := kafka.NewProducer(kafkaConfig)
+	if err != nil {
+		log.Printf("Warning: Failed to create Kafka producer: %v", err)
+		// Continue without producer, service will create a default one
+	}
+	defer func() {
+		if producer != nil {
+			if err := producer.Close(); err != nil {
+				log.Printf("Warning: Failed to close Kafka producer: %v", err)
+			}
+		}
+	}()
+
 	// Initialize transaction service
-	txService := service.NewTransactionService(repo)
+	txService := service.NewTransactionService(repo, producer)
 
 	// Initialize and start HTTP server
 	server := api.NewServer(txService, port)
