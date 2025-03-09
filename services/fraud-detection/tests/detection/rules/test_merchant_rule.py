@@ -71,8 +71,9 @@ def test_evaluate_high_risk_merchant(default_rule):
     result = default_rule.evaluate(tx)
     
     assert result.is_fraudulent
-    # (0.6 * 0.7 + 0.7 * 0.3) * 0.25 weight = 0.83
-    assert result.risk_score == pytest.approx(0.83 * 0.25)
+    # gaming: 0.6, RU: 0.7
+    # Combined score = (0.6 * 0.7 + 0.7 * 0.3) * 0.25 weight = 0.1575
+    assert result.risk_score == pytest.approx(0.63 * 0.25)
     assert "high risk merchant" in result.reason.lower()
     assert result.metadata["error_code"] == "HIGH_RISK_TRANSACTION"
 

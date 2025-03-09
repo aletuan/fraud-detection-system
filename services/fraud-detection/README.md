@@ -11,6 +11,11 @@ Dịch vụ phát hiện gian lận theo thời gian thực, phân tích các gi
 - Metrics và monitoring
 - Structured logging
 
+## Tài liệu
+
+- [Cách tính Risk Score](../../docs/risk_score_calculation.md): Chi tiết về cách tính điểm rủi ro cho mỗi rule và tổng hợp kết quả
+- [Implementation Plan](docs/implementation_plan.md): Kế hoạch triển khai và các tính năng sắp tới
+
 ## Cài đặt
 
 1. Tạo Python virtual environment:
@@ -80,6 +85,9 @@ src/
 │   └── rules/     # Các rules riêng lẻ
 ├── kafka/         # Kafka consumer/producer
 └── utils/         # Các hàm tiện ích
+
+docs/              # Tài liệu của service
+└── implementation_plan.md  # Kế hoạch triển khai
 ```
 
 ## Thêm Rules Mới
@@ -87,4 +95,5 @@ src/
 1. Tạo một class rule mới trong `src/detection/rules/`
 2. Kế thừa từ `BaseRule`
 3. Implement phương thức `evaluate`
-4. Thêm rule vào engine trong `src/detection/engine.py` 
+4. Thêm rule vào engine trong `src/detection/engine.py`
+5. Tham khảo [Cách tính Risk Score](../../docs/risk_score_calculation.md) để hiểu cách tính điểm rủi ro 

@@ -11,6 +11,7 @@ class LocationRules:
     risk_scores: Dict[str, float]
     velocity_limit: float  # km/h
     default_risk_score: float = 0.8  # High risk for unknown locations
+    high_risk_threshold: float = 0.7  # Mark as fraudulent if risk score >= 0.7
 
 class LocationBasedRule(BaseRule):
     """Rule for evaluating location-related risks"""
@@ -73,7 +74,7 @@ class LocationBasedRule(BaseRule):
         # This would require checking the time and distance between consecutive transactions
 
         # Determine if transaction is fraudulent based on risk score
-        is_fraudulent = risk_score >= 0.8  # High risk threshold
+        is_fraudulent = risk_score >= self.rules.high_risk_threshold
         reason = self._get_reason(transaction.location, risk_score)
         
         metadata = {

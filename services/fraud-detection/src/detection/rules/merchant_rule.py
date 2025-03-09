@@ -11,6 +11,7 @@ class MerchantRules:
     risk_scores: Dict[str, float]
     country_risk_scores: Dict[str, float]
     default_risk_score: float = 0.8  # High risk for unknown merchants/categories
+    high_risk_threshold: float = 0.6  # Mark as fraudulent if risk score >= 0.6
 
 class MerchantBasedRule(BaseRule):
     """Rule for evaluating merchant-related risks"""
@@ -75,8 +76,8 @@ class MerchantBasedRule(BaseRule):
         # Combine risk scores (higher weight on category)
         risk_score = (category_risk * 0.7) + (country_risk * 0.3)
         
-        # Determine if transaction is fraudulent based on combined risk
-        is_fraudulent = risk_score >= 0.8  # High risk threshold
+        # Determine if transaction is fraudulent based on risk score
+        is_fraudulent = risk_score >= self.rules.high_risk_threshold
         reason = self._get_reason(merchant_category, merchant_country, risk_score)
         
         metadata = {
