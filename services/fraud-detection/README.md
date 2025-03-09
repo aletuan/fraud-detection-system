@@ -11,12 +11,33 @@ Dịch vụ phát hiện gian lận theo thời gian thực, phân tích các gi
 - Metrics và monitoring
 - Structured logging
 
-## Tài liệu
-
-- [Cách tính Risk Score](../../docs/risk_score_calculation.md): Chi tiết về cách tính điểm rủi ro cho mỗi rule và tổng hợp kết quả
-- [Implementation Plan](docs/implementation_plan.md): Kế hoạch triển khai và các tính năng sắp tới
-
 ## Cài đặt
+
+### Yêu cầu
+- Python 3.8+
+- Apache Kafka
+- Redis
+- Docker và Docker Compose
+
+### Sử dụng Docker Compose (Recommended)
+
+1. Clone repository:
+```bash
+git clone https://github.com/your-repo/fraud-detection-system.git
+cd fraud-detection-system
+```
+
+2. Start services:
+```bash
+docker-compose up -d
+```
+
+3. Kiểm tra service đã hoạt động:
+```bash
+curl http://localhost:8000/health
+```
+
+### Development Setup
 
 1. Tạo Python virtual environment:
 ```bash
@@ -34,20 +55,35 @@ pip install -r requirements.txt
 python src/main.py
 ```
 
-## Docker
+## API Endpoints
 
-Build image:
+### Validate Transaction
 ```bash
-docker build -t fraud-detection-service .
+curl -X POST http://localhost:8000/api/v1/validate \
+-H "Content-Type: application/json" \
+-d '{
+  "transaction_id": "123",
+  "account_id": "ACC123",
+  "amount": 1000.00,
+  "currency": "USD",
+  "merchant_info": {
+    "id": "MERCH001",
+    "category": "retail"
+  },
+  "location": {
+    "country": "US",
+    "city": "New York"
+  },
+  "device_info": {
+    "type": "mobile",
+    "browser": "chrome"
+  }
+}'
 ```
 
-Chạy container:
+### Get Risk Score
 ```bash
-docker run -d \
-  --name fraud-detection \
-  -e KAFKA_BOOTSTRAP_SERVERS=kafka:29092 \
-  -e KAFKA_GROUP_ID=fraud-detection-group \
-  fraud-detection-service
+curl http://localhost:8000/api/v1/risk-score/{transaction_id}
 ```
 
 ## Cấu hình
@@ -58,22 +94,10 @@ Service có thể được cấu hình thông qua các environment variables:
 - `KAFKA_GROUP_ID`: Consumer group ID (mặc định: fraud-detection-group)
 - `KAFKA_TRANSACTION_TOPIC`: Topic cho transaction events (mặc định: transactions)
 - `KAFKA_FRAUD_ALERT_TOPIC`: Topic cho fraud alerts (mặc định: fraud-alerts)
+- `REDIS_HOST`: Redis host (mặc định: localhost)
+- `REDIS_PORT`: Redis port (mặc định: 6379)
 - `LOG_LEVEL`: Logging level (mặc định: INFO)
 - `METRICS_PORT`: Port cho metrics endpoint (mặc định: 8000)
-
-## Phát triển
-
-Chạy tests:
-```bash
-pytest
-```
-
-Chạy linting:
-```bash
-flake8 src tests
-black src tests
-mypy src tests
-```
 
 ## Cấu trúc Project
 
@@ -90,10 +114,60 @@ docs/              # Tài liệu của service
 └── implementation_plan.md  # Kế hoạch triển khai
 ```
 
-## Thêm Rules Mới
+## Tài liệu
+
+- [Risk Score Calculation](../../docs/risk_score_calculation.md) - Chi tiết về cách tính điểm rủi ro
+- [Implementation Plan](docs/implementation_plan.md) - Kế hoạch triển khai và roadmap
+- [Operations Guide](../../docs/operations-guide.md) - Hướng dẫn vận hành, troubleshooting và bảo trì hệ thống
+
+## Monitoring
+
+### Health Check
+```bash
+curl http://localhost:8000/health
+```
+
+### Metrics
+```bash
+curl http://localhost:8000/metrics
+```
+
+## Development
+
+### Testing
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src tests/
+```
+
+### Linting và Formatting
+```bash
+# Linting
+flake8 src tests
+mypy src tests
+
+# Formatting
+black src tests
+```
+
+### Thêm Rules Mới
 
 1. Tạo một class rule mới trong `src/detection/rules/`
 2. Kế thừa từ `BaseRule`
 3. Implement phương thức `evaluate`
 4. Thêm rule vào engine trong `src/detection/engine.py`
-5. Tham khảo [Cách tính Risk Score](../../docs/risk_score_calculation.md) để hiểu cách tính điểm rủi ro 
+5. Tham khảo [Risk Score Calculation](../../docs/risk_score_calculation.md)
+
+## Contributing
+
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Create pull request
+
+## License
+
+MIT 
