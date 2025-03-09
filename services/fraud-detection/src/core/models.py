@@ -55,18 +55,14 @@ class DeviceInfo:
 @dataclass
 class Transaction:
     id: str
-    account_id: str
     amount: float
     currency: str
-    type: TransactionType
-    status: TransactionStatus
-    reference_id: str
-    created_at: datetime
-    merchant_id: Optional[str] = None
-    merchant_name: Optional[str] = None
-    location: Optional[Location] = None
-    device_info: Optional[DeviceInfo] = None
-    metadata: Optional[Dict[str, Any]] = None
+    merchant: str
+    location: str
+    device_id: str
+    timestamp: datetime
+    status: str
+    user_id: str
 
 @dataclass
 class ValidationError:
