@@ -58,11 +58,13 @@ class Transaction:
     amount: float
     currency: str
     merchant: str
-    location: str
+    location: Location
     device_id: str
     timestamp: datetime
     status: str
     user_id: str
+    device_info: Optional[DeviceInfo] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 @dataclass
 class ValidationError:

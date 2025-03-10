@@ -42,6 +42,11 @@ class BaseRule(ABC):
         Returns:
             RuleResult instance
         """
+        if metadata is None:
+            metadata = {}
+        metadata["original_risk_score"] = risk_score
+        metadata["weight"] = self.weight
+        
         return RuleResult(
             rule_name=self.name,
             is_fraudulent=is_fraudulent,

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .consumer import KafkaConsumer
 from .config import KafkaConfig
-from core.models import Transaction
+from core.models import Transaction, Location, DeviceInfo
 from detection.engine import FraudDetectionEngine
 from config import settings
 
@@ -63,29 +63,68 @@ class TransactionConsumer:
             transaction_data = event_data.get('transaction', {})
             
             # Convert message to Transaction model
+            location_data = transaction_data.get('location', {})
+            device_data = transaction_data.get('device_info', {})
+            
+            location = Location(
+                country=location_data.get('country', ''),
+                city=location_data.get('city')
+            )
+            
+            device_info = DeviceInfo(
+                device_type=device_data.get('device_type', 'unknown'),
+                browser_type=device_data.get('browser_type', 'unknown'),
+                device_os=device_data.get('device_os', 'unknown'),
+                is_mobile=device_data.get('is_mobile', False),
+                device_id=device_data.get('device_id'),
+                ip_address=device_data.get('ip_address')
+            )
+            
             transaction = Transaction(
                 id=transaction_data.get('id'),
                 amount=transaction_data.get('amount'),
                 currency=transaction_data.get('currency'),
                 merchant=transaction_data.get('merchant_name', ''),
-                location=transaction_data.get('location', {}),
-                device_id=transaction_data.get('device_info', {}).get('device_id', ''),
+                location=location,
+                device_id=device_data.get('device_id', ''),
                 timestamp=datetime.fromisoformat(transaction_data.get('created_at')),
                 status=transaction_data.get('status'),
-                user_id=transaction_data.get('account_id')
+                user_id=transaction_data.get('account_id'),
+                device_info=device_info,
+                metadata={
+                    'merchant_country': location_data.get('country'),
+                    'merchant_category': 'retail',  # Default category for now
+                }
             )
             
             # Process transaction through detection engine
+            logger.info(
+                f"Processing transaction {transaction.id}:\n"
+                f"- Location: {transaction.location.country} ({transaction.location.city})\n"
+                f"- Device: {transaction.device_info.device_type} ({transaction.device_info.browser_type} on {transaction.device_info.device_os})\n"
+                f"- Amount: {transaction.amount} {transaction.currency}"
+            )
+            
             result = self.detection_engine.evaluate_transaction(transaction)
             
             logger.info(
-                f"Processed transaction {transaction.id} with risk score {result.risk_score}"
+                f"Processed transaction {transaction.id}:\n"
+                f"- Risk score: {result.risk_score}\n"
+                f"- Is fraudulent: {result.is_fraudulent}\n"
+                f"- Rules triggered: {result.rules_triggered}\n"
+                f"- Location: {transaction.location.country} ({transaction.location.city})\n"
+                f"- Device: {transaction.device_info.device_type} ({transaction.device_info.browser_type} on {transaction.device_info.device_os})\n"
+                f"- Amount: {transaction.amount} {transaction.currency}"
             )
             
             if result.is_fraudulent:
                 logger.warning(
-                    f"Fraud detected for transaction {transaction.id} "
-                    f"with risk score {result.risk_score}"
+                    f"Fraud detected for transaction {transaction.id}:\n"
+                    f"- Risk score: {result.risk_score}\n"
+                    f"- Rules triggered: {result.rules_triggered}\n"
+                    f"- Location: {transaction.location.country} ({transaction.location.city})\n"
+                    f"- Device: {transaction.device_info.device_type} ({transaction.device_info.browser_type} on {transaction.device_info.device_os})\n"
+                    f"- Amount: {transaction.amount} {transaction.currency}"
                 )
                 # TODO: Publish fraud alert
             

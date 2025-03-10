@@ -3,6 +3,9 @@ from typing import List, Dict, Optional
 
 from src.core.models import Transaction, RuleResult, ValidationErrorCode, Location
 from src.detection.rules.base_rule import BaseRule
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class LocationRules:
@@ -42,6 +45,7 @@ class LocationBasedRule(BaseRule):
     def evaluate(self, transaction: Transaction) -> RuleResult:
         # Handle missing location
         if not transaction.location:
+            logger.warning(f"No location information provided for transaction {transaction.id}")
             return self._create_result(
                 is_fraudulent=False,
                 risk_score=self.rules.default_risk_score,
@@ -52,8 +56,17 @@ class LocationBasedRule(BaseRule):
                 }
             )
 
+        logger.info(
+            f"Evaluating location for transaction {transaction.id}: "
+            f"country={transaction.location.country}, city={transaction.location.city}"
+        )
+
         # Check for blocked countries
         if transaction.location.country in self.rules.blocked_countries:
+            logger.warning(
+                f"Blocked country detected for transaction {transaction.id}: "
+                f"country={transaction.location.country}"
+            )
             return self._create_result(
                 is_fraudulent=True,
                 risk_score=1.0,
@@ -68,6 +81,10 @@ class LocationBasedRule(BaseRule):
         risk_score = self.rules.risk_scores.get(
             transaction.location.country,
             self.rules.default_risk_score
+        )
+        logger.info(
+            f"Location risk score for transaction {transaction.id}: {risk_score} "
+            f"(country={transaction.location.country})"
         )
 
         # TODO: Implement velocity check when previous transaction data is available
@@ -91,6 +108,10 @@ class LocationBasedRule(BaseRule):
 
         if is_fraudulent:
             metadata["error_code"] = ValidationErrorCode.HIGH_RISK_TRANSACTION
+            logger.warning(
+                f"High risk location detected for transaction {transaction.id}: "
+                f"country={transaction.location.country}, risk_score={risk_score}"
+            )
 
         return self._create_result(
             is_fraudulent=is_fraudulent,
