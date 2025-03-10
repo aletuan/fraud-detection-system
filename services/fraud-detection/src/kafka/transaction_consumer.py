@@ -5,6 +5,7 @@ from datetime import datetime
 
 from .consumer import KafkaConsumer
 from .config import KafkaConfig
+from .concurrent_processor import ConcurrentProcessor, Message
 
 # Default Kafka configuration
 DEFAULT_BOOTSTRAP_SERVERS = 'kafka:29092'
@@ -29,7 +30,9 @@ class TransactionConsumer:
         self,
         kafka_config: Optional[KafkaConfig] = None,
         detection_engine: Optional[FraudDetectionEngine] = None,
-        dead_letter_topic: Optional[str] = DEFAULT_DLQ_TOPIC
+        dead_letter_topic: Optional[str] = DEFAULT_DLQ_TOPIC,
+        max_workers: int = 10,
+        preserve_ordering: bool = True
     ):
         """Initialize Transaction Consumer
         
@@ -37,6 +40,8 @@ class TransactionConsumer:
             kafka_config: Kafka configuration, uses settings if not provided
             detection_engine: Fraud detection engine instance
             dead_letter_topic: Topic for failed messages
+            max_workers: Maximum number of concurrent workers
+            preserve_ordering: Whether to preserve message ordering within partition
         """
         self.detection_engine = detection_engine or FraudDetectionEngine()
         
@@ -47,9 +52,14 @@ class TransactionConsumer:
                 topics=[settings.TRANSACTION_TOPIC or DEFAULT_TRANSACTION_TOPIC]
             )
             
+        self.processor = ConcurrentProcessor(
+            max_workers=max_workers,
+            preserve_ordering=preserve_ordering
+        )
+            
         self.consumer = KafkaConsumer(
             config=kafka_config,
-            message_handler=self._handle_transaction,
+            message_handler=self._handle_message,
             error_handler=self._handle_error,
             dead_letter_topic=dead_letter_topic
         )
@@ -63,12 +73,42 @@ class TransactionConsumer:
         """Stop consuming transaction events"""
         logger.info("Stopping transaction consumer...")
         self.consumer.stop()
+        self.processor.shutdown()
         
-    def _handle_transaction(self, message: Dict[str, Any]):
-        """Handle transaction event
+    def _handle_message(self, kafka_message: Dict[str, Any]):
+        """Handle incoming Kafka message
         
         Args:
-            message: Transaction event message
+            kafka_message: Raw Kafka message
+        """
+        # Create message wrapper
+        message = Message(
+            partition=kafka_message.get('partition', 0),
+            offset=kafka_message.get('offset', 0),
+            key=kafka_message.get('key'),
+            value=kafka_message.get('value'),
+            timestamp=kafka_message.get('timestamp', 0.0)
+        )
+        
+        # Submit for processing
+        future = self.processor.submit(
+            message=message,
+            processor=self._process_transaction
+        )
+        
+        # Optionally wait for result
+        if message.key and message.key.startswith('URGENT'):
+            try:
+                future.result(timeout=5.0)  # Wait up to 5 seconds
+            except Exception as e:
+                logger.error(f"Error processing urgent message: {str(e)}")
+                raise
+        
+    def _process_transaction(self, message: Dict[str, Any]):
+        """Process transaction message
+        
+        Args:
+            message: Transaction message to process
         """
         try:
             # Extract transaction data from event wrapper
@@ -140,6 +180,8 @@ class TransactionConsumer:
                     f"- Amount: {transaction.amount} {transaction.currency}"
                 )
                 # TODO: Publish fraud alert
+                
+            return result
             
         except Exception as e:
             logger.error(f"Error processing transaction: {str(e)}")
