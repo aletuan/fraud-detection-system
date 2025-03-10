@@ -1,12 +1,9 @@
 from fastapi import FastAPI, HTTPException
-from prometheus_client import Counter, Histogram
 import logging
 
-logger = logging.getLogger(__name__)
+from metrics import REQUESTS, PROCESSING_TIME
 
-# Metrics
-REQUESTS = Counter('fraud_detection_requests_total', 'Total requests processed')
-PROCESSING_TIME = Histogram('fraud_detection_processing_seconds', 'Time spent processing request')
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Fraud Detection Service")
 

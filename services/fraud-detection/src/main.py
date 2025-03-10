@@ -7,8 +7,9 @@ from typing import Optional
 
 import uvicorn
 from api import app
+from kafka.consumer import KafkaConsumer
 from kafka.config import KafkaConfig
-from kafka.transaction_consumer import TransactionConsumer
+from kafka.transaction_consumer import TransactionConsumer, DEFAULT_BOOTSTRAP_SERVERS, DEFAULT_GROUP_ID, DEFAULT_TRANSACTION_TOPIC, DEFAULT_DLQ_TOPIC
 from detection.engine import FraudDetectionEngine
 
 # Configure logging

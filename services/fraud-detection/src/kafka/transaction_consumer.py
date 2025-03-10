@@ -5,7 +5,20 @@ from datetime import datetime
 
 from .consumer import KafkaConsumer
 from .config import KafkaConfig
-from core.models import Transaction, Location, DeviceInfo
+
+# Default Kafka configuration
+DEFAULT_BOOTSTRAP_SERVERS = 'kafka:29092'
+DEFAULT_GROUP_ID = 'fraud-detection-group'
+DEFAULT_TRANSACTION_TOPIC = 'transactions'
+DEFAULT_DLQ_TOPIC = 'fraud.detection.dlq'
+
+from core.models import (
+    Transaction,
+    Location,
+    DeviceInfo,
+    TransactionStatus,
+    DEFAULT_STATUS
+)
 from detection.engine import FraudDetectionEngine
 from config import settings
 
@@ -16,7 +29,7 @@ class TransactionConsumer:
         self,
         kafka_config: Optional[KafkaConfig] = None,
         detection_engine: Optional[FraudDetectionEngine] = None,
-        dead_letter_topic: Optional[str] = "fraud.detection.dlq"
+        dead_letter_topic: Optional[str] = DEFAULT_DLQ_TOPIC
     ):
         """Initialize Transaction Consumer
         
@@ -29,9 +42,9 @@ class TransactionConsumer:
         
         if kafka_config is None:
             kafka_config = KafkaConfig(
-                bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-                group_id=settings.KAFKA_CONSUMER_GROUP,
-                topics=[settings.TRANSACTION_TOPIC]
+                bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS or DEFAULT_BOOTSTRAP_SERVERS,
+                group_id=settings.KAFKA_CONSUMER_GROUP or DEFAULT_GROUP_ID,
+                topics=[settings.TRANSACTION_TOPIC or DEFAULT_TRANSACTION_TOPIC]
             )
             
         self.consumer = KafkaConsumer(
@@ -88,7 +101,7 @@ class TransactionConsumer:
                 location=location,
                 device_id=device_data.get('device_id', ''),
                 timestamp=datetime.fromisoformat(transaction_data.get('created_at')),
-                status=transaction_data.get('status'),
+                status=transaction_data.get('status', DEFAULT_STATUS),
                 user_id=transaction_data.get('account_id'),
                 device_info=device_info,
                 metadata={

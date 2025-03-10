@@ -12,6 +12,9 @@ class TransactionStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
+# Default transaction status
+DEFAULT_STATUS = TransactionStatus.PENDING
+
 class ValidationErrorCode(str, Enum):
     AMOUNT_LIMIT_EXCEEDED = "AMOUNT_LIMIT_EXCEEDED"
     DAILY_LIMIT_EXCEEDED = "DAILY_LIMIT_EXCEEDED"
