@@ -83,11 +83,11 @@ class TransactionConsumer:
         """
         # Create message wrapper
         message = Message(
-            partition=kafka_message.get('partition', 0),
-            offset=kafka_message.get('offset', 0),
-            key=kafka_message.get('key'),
-            value=kafka_message.get('value'),
-            timestamp=kafka_message.get('timestamp', 0.0)
+            partition=kafka_message.partition() if hasattr(kafka_message, 'partition') else 0,
+            offset=kafka_message.offset() if hasattr(kafka_message, 'offset') else 0,
+            key=kafka_message.key() if hasattr(kafka_message, 'key') else None,
+            value=kafka_message.value() if hasattr(kafka_message, 'value') else None,
+            timestamp=kafka_message.timestamp()[1] if hasattr(kafka_message, 'timestamp') else 0.0
         )
         
         # Submit for processing
@@ -97,12 +97,14 @@ class TransactionConsumer:
         )
         
         # Optionally wait for result
-        if message.key and message.key.startswith('URGENT'):
-            try:
-                future.result(timeout=5.0)  # Wait up to 5 seconds
-            except Exception as e:
-                logger.error(f"Error processing urgent message: {str(e)}")
-                raise
+        if message.key and isinstance(message.key, bytes):
+            key_str = message.key.decode('utf-8')
+            if key_str.startswith('URGENT'):
+                try:
+                    future.result(timeout=5.0)  # Wait up to 5 seconds
+                except Exception as e:
+                    logger.error(f"Error processing urgent message: {str(e)}")
+                    raise
         
     def _process_transaction(self, message: Dict[str, Any]):
         """Process transaction message
@@ -112,8 +114,26 @@ class TransactionConsumer:
         """
         try:
             # Extract transaction data from event wrapper
-            event_data = json.loads(message) if isinstance(message, str) else message
-            transaction_data = event_data.get('transaction', {})
+            logger.info(f"Raw message: {message}")
+            message_value = message.value if isinstance(message, Message) else message
+            logger.info(f"Message value: {message_value}")
+            
+            if message_value is None:
+                raise ValueError("Message value is None")
+                
+            # If message_value is bytes, decode it
+            if isinstance(message_value, bytes):
+                message_value = message_value.decode('utf-8')
+                
+            event_data = json.loads(message_value) if isinstance(message_value, str) else message_value
+            logger.info(f"Event data: {event_data}")
+            
+            # Extract transaction data from event
+            transaction_data = event_data.get('transaction')
+            if not transaction_data:
+                raise ValueError("No transaction data found in event")
+            
+            logger.info(f"Transaction data: {transaction_data}")
             
             # Convert message to Transaction model
             location_data = transaction_data.get('location', {})
@@ -140,13 +160,13 @@ class TransactionConsumer:
                 merchant=transaction_data.get('merchant_name', ''),
                 location=location,
                 device_id=device_data.get('device_id', ''),
-                timestamp=datetime.fromisoformat(transaction_data.get('created_at')),
+                timestamp=datetime.fromisoformat(transaction_data.get('created_at').replace('Z', '+00:00')),
                 status=transaction_data.get('status', DEFAULT_STATUS),
                 user_id=transaction_data.get('account_id'),
                 device_info=device_info,
                 metadata={
                     'merchant_country': location_data.get('country'),
-                    'merchant_category': 'retail',  # Default category for now
+                    'merchant_category': event_data.get('metadata', {}).get('merchant_category', 'retail')
                 }
             )
             

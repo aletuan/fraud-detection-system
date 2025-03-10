@@ -66,18 +66,17 @@ class KafkaConsumer:
     def _process_message(self, msg: Message):
         """Process a single message"""
         try:
-            # Parse message value
-            value = json.loads(msg.value().decode('utf-8'))
-            
-            # Process message
-            self.message_handler(value)
+            # Check if message value is None
+            if msg.value() is None:
+                logger.error("Message value is None")
+                self._send_to_dead_letter(msg, "Message value is None")
+                return
+                
+            # Process message with raw message object
+            self.message_handler(msg)
             
             # Manual commit after successful processing
             self.consumer.commit(msg)
-            
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to decode message: {str(e)}")
-            self._send_to_dead_letter(msg, "Invalid JSON format")
             
         except Exception as e:
             logger.error(f"Failed to process message: {str(e)}")
@@ -103,7 +102,7 @@ class KafkaConsumer:
                 'original_topic': msg.topic(),
                 'original_partition': msg.partition(),
                 'original_offset': msg.offset(),
-                'original_value': msg.value().decode('utf-8'),
+                'original_value': msg.value().decode('utf-8') if msg.value() is not None else None,
                 'error_reason': error_reason,
                 'timestamp': msg.timestamp()[1]
             }
