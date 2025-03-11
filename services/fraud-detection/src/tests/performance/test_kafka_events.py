@@ -14,11 +14,24 @@ logger = logging.getLogger(__name__)
 def parse_iso_datetime(dt_str: str) -> datetime:
     """Safely parse ISO datetime string"""
     try:
-        # Remove any whitespace and 'Z' suffix
-        dt_str = dt_str.strip().rstrip('Z')
-        # Add timezone offset if missing
-        if '+' not in dt_str and '-' not in dt_str:
-            dt_str += '+00:00'
+        # Remove any whitespace
+        dt_str = dt_str.strip()
+        
+        # Handle microseconds format
+        if '.' in dt_str:
+            main_part, ms_part = dt_str.split('.')
+            if 'Z' in ms_part:
+                ms_part = ms_part.replace('Z', '')
+            # Ensure microseconds are 6 digits
+            ms_part = ms_part[:6].ljust(6, '0')
+            dt_str = f"{main_part}.{ms_part}+00:00"
+        else:
+            # Add UTC timezone if no timezone specified
+            if not any(x in dt_str for x in ['+', '-', 'Z']):
+                dt_str = dt_str + '+00:00'
+            elif 'Z' in dt_str:
+                dt_str = dt_str.replace('Z', '+00:00')
+                
         return datetime.fromisoformat(dt_str)
     except (ValueError, TypeError) as e:
         logger.error(f"Error parsing datetime '{dt_str}': {str(e)}")
