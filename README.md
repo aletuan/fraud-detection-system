@@ -2,6 +2,20 @@
 
 Hệ thống phát hiện gian lận giao dịch theo thời gian thực được xây dựng trên nền tảng Microservices và Event-Driven Architecture.
 
+## Kế Hoạch Triển Khai Chi Tiết
+
+Để hiểu rõ hơn về cách triển khai từng dịch vụ trong hệ thống, chúng tôi đã chuẩn bị các tài liệu chi tiết sau:
+
+- [Dịch Vụ Phát Hiện Gian Lận](docs/implementation-plans/fraud-detection-service.md): Chi tiết về cách triển khai các quy tắc phát hiện gian lận, xử lý luồng sự kiện và tích hợp với các dịch vụ khác.
+- [Dịch Vụ Quản Lý Giao Dịch](docs/implementation-plans/transaction-service.md): Mô tả chi tiết về cách xử lý giao dịch, quản lý dữ liệu và tích hợp với Kafka.
+- [Dịch Vụ Phân Tích và Bảng Điều Khiển](docs/implementation-plans/dashboard-analytics-service.md): Hướng dẫn triển khai hệ thống phân tích thời gian thực và xây dựng bảng điều khiển.
+- [Dịch Vụ Thông Báo Khách Hàng](docs/implementation-plans/customer-notification-service.md): Chi tiết về cách triển khai hệ thống thông báo đa kênh.
+- [Dịch Vụ Cảnh Báo Bảo Mật](docs/implementation-plans/security-alert-service.md): Mô tả cách xử lý và quản lý các cảnh báo bảo mật.
+
+Ngoài ra, chúng tôi cũng cung cấp:
+- [Hướng Dẫn Vận Hành](docs/operations-guide.md): Hướng dẫn chi tiết về cách vận hành và bảo trì hệ thống.
+- [Tính Toán Điểm Rủi Ro](docs/risk_score_calculation.md): Tài liệu chi tiết về cách tính toán điểm rủi ro cho các giao dịch.
+
 ## Kiến Trúc Hệ Thống
 
 Hệ thống bao gồm các thành phần chính sau:
