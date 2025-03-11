@@ -4,12 +4,19 @@ import logging
 from datetime import datetime
 import os
 
+# Create logs directory if it doesn't exist
+LOGS_DIR = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 # Configure logging
+current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+log_file = os.path.join(LOGS_DIR, f'performance_test_{current_time}.log')
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler(f'performance_test_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'),
+        logging.FileHandler(log_file),
         logging.StreamHandler()
     ]
 )
