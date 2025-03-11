@@ -103,6 +103,7 @@ class TestFraudDetectionEngine:
             weight=0.4,
             __class__=Mock(__name__="Rule1"),
             evaluate=Mock(return_value=RuleResult(
+                rule_name="Rule1",
                 risk_score=0.5,
                 is_fraudulent=False,
                 reason="Test rule 1",
@@ -113,6 +114,7 @@ class TestFraudDetectionEngine:
             weight=0.6,
             __class__=Mock(__name__="Rule2"),
             evaluate=Mock(return_value=RuleResult(
+                rule_name="Rule2",
                 risk_score=0.8,
                 is_fraudulent=True,
                 reason="Test rule 2",
