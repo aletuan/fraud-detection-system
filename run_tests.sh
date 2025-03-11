@@ -47,7 +47,7 @@ check_service_health "transaction-service" || exit 1
 # Step 5: Run unit tests
 echo "=== Running unit tests ==="
 cd services/fraud-detection
-python -m pytest src/detection/rules/tests/ src/detection/tests/ src/core/tests/ -v --cov=src
+python -m pytest src/detection/rules/tests/ src/detection/tests/ src/core/tests/ src/kafka/tests/ -v --cov=src
 
 # Step 6: Run performance tests
 echo "=== Running performance tests ==="
