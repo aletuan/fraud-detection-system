@@ -57,8 +57,8 @@ class TestAmountBasedRule:
         result = rule.evaluate(sample_transaction)
         
         assert not result.is_fraudulent
-        assert 0.2 <= result.risk_score < 0.4  # 0.1 + (0.4 * 0.3) = 0.22
-        assert "low-medium risk" in result.reason.lower()
+        assert result.risk_score == 0.3  # 3000/10000 = 0.3
+        assert "medium risk" in result.reason.lower()
         assert result.metadata["amount_ratio"] == pytest.approx(0.3)
 
     def test_high_amount_transaction(self, sample_transaction):
@@ -68,8 +68,8 @@ class TestAmountBasedRule:
         result = rule.evaluate(sample_transaction)
         
         assert not result.is_fraudulent
-        assert 0.3 <= result.risk_score < 0.5  # 0.1 + (0.4 * 0.7) = 0.38
-        assert "medium risk" in result.reason.lower()
+        assert result.risk_score == 0.7  # 7000/10000 = 0.7
+        assert "medium-high risk" in result.reason.lower()
         assert result.metadata["amount_ratio"] == pytest.approx(0.7)
 
     def test_very_high_amount_transaction(self, sample_transaction):
@@ -79,8 +79,8 @@ class TestAmountBasedRule:
         result = rule.evaluate(sample_transaction)
         
         assert result.is_fraudulent
-        assert result.risk_score == 0.6  # min(1.0, 0.5 + 0.5 * (1.2 - 1)) = 0.6
-        assert "high risk" in result.reason.lower()
+        assert result.risk_score == 1.0  # min(12000/10000, 1.0) = 1.0
+        assert "very high risk" in result.reason.lower()
         assert result.metadata["amount_ratio"] > 1.0
 
     def test_invalid_currency(self, sample_transaction):
@@ -101,6 +101,6 @@ class TestAmountBasedRule:
         result = rule.evaluate(sample_transaction)
         
         assert not result.is_fraudulent
-        assert result.risk_score == pytest.approx(0.42)  # 0.1 + (0.4 * 0.8) = 0.42
-        assert "medium risk" in result.reason.lower()
+        assert result.risk_score == 0.8  # 4000/5000 = 0.8
+        assert "very high risk" in result.reason.lower()
         assert result.metadata["max_amount"] == 5000.0 

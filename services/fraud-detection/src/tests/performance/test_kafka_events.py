@@ -22,16 +22,10 @@ file_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 
-# Configure console handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(formatter)
-
 # Configure root logger
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(file_handler)
-logger.addHandler(console_handler)
 
 def parse_iso_datetime(dt_str: str) -> datetime:
     """Safely parse ISO datetime string"""
@@ -92,7 +86,10 @@ class KafkaEventChecker:
                     break
                     
             try:
+                event_start_time = time.time()
                 event = json.loads(msg.value().decode('utf-8'))
+                # Add processing start time to event
+                event['processing_start_time'] = event_start_time
                 self.events.append(event)
                 logger.info(f"Received event: {event['event_id']}")
             except json.JSONDecodeError as e:
@@ -152,7 +149,7 @@ def test_kafka_events():
             occurred_at = parse_iso_datetime(event.get('occurred_at'))
             
             if created_at and occurred_at:
-                processing_time = (created_at - occurred_at).total_seconds()
+                processing_time = (occurred_at - created_at).total_seconds()
                 processing_times.append(processing_time)
         
         if processing_times:
@@ -172,11 +169,13 @@ def test_kafka_events():
             logger.info(f"Location: {transaction.get('location', {}).get('country')} ({transaction.get('location', {}).get('city')})")
             logger.info(f"Device: {transaction.get('device_info', {}).get('device_type')}")
             
-            created_at = parse_iso_datetime(transaction.get('created_at'))
-            occurred_at = parse_iso_datetime(event.get('occurred_at'))
-            if created_at and occurred_at:
-                processing_time = (created_at - occurred_at).total_seconds()
+            # Calculate actual processing time
+            processing_start = event.get('processing_start_time')
+            if processing_start:
+                processing_time = time.time() - processing_start
                 logger.info(f"Processing time: {processing_time:.2f} seconds")
+            else:
+                logger.warning(f"No processing time available for event {event.get('event_id')}")
             
     finally:
         checker.cleanup()

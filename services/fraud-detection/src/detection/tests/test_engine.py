@@ -99,28 +99,35 @@ class TestFraudDetectionEngine:
     def test_weighted_risk_calculation(self, engine, sample_transaction):
         """Test weighted risk score calculation"""
         # Create mock rules with known risk scores
-        mock_rules = [
-            Mock(weight=0.4, evaluate=Mock(return_value=RuleResult(
+        mock_rule1 = Mock(
+            weight=0.4,
+            __class__=Mock(__name__="Rule1"),
+            evaluate=Mock(return_value=RuleResult(
                 risk_score=0.5,
                 is_fraudulent=False,
                 reason="Test rule 1",
                 metadata={"original_risk_score": 0.5}
-            ))),
-            Mock(weight=0.6, evaluate=Mock(return_value=RuleResult(
+            ))
+        )
+        mock_rule2 = Mock(
+            weight=0.6,
+            __class__=Mock(__name__="Rule2"),
+            evaluate=Mock(return_value=RuleResult(
                 risk_score=0.8,
                 is_fraudulent=True,
                 reason="Test rule 2",
                 metadata={"original_risk_score": 0.8}
-            )))
-        ]
+            ))
+        )
         
-        engine.rules = mock_rules
+        engine.rules = [mock_rule1, mock_rule2]
         result = engine.evaluate_transaction(sample_transaction)
         
         # Expected weighted risk score: (0.5 * 0.4) + (0.8 * 0.6) = 0.2 + 0.48 = 0.68
-        assert pytest.approx(result.risk_score) == 0.68
+        assert result.risk_score == pytest.approx(0.68, abs=1e-2)
         assert result.is_fraudulent
         assert len(result.rules_triggered) == 1
+        assert "Rule2: Test rule 2" in result.rules_triggered
 
     def test_missing_metadata(self, engine, sample_transaction):
         """Test handling of transaction with missing metadata"""

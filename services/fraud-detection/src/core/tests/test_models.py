@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime
-from src.core.models import (
+from core.models import (
     TransactionType, TransactionStatus, ValidationErrorCode,
     Coordinates, Location, DeviceInfo, Transaction,
     ValidationError, RuleResult, DetectionResult,
