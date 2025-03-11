@@ -101,14 +101,12 @@ class TestFraudDetectionEngine:
         # Create mock rules with known risk scores
         mock_rules = [
             Mock(weight=0.4, evaluate=Mock(return_value=RuleResult(
-                rule_name="TestRule1",
                 risk_score=0.5,
                 is_fraudulent=False,
                 reason="Test rule 1",
                 metadata={"original_risk_score": 0.5}
             ))),
             Mock(weight=0.6, evaluate=Mock(return_value=RuleResult(
-                rule_name="TestRule2",
                 risk_score=0.8,
                 is_fraudulent=True,
                 reason="Test rule 2",

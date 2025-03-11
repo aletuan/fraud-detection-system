@@ -18,7 +18,7 @@ class AmountBasedRule(BaseRule):
     def __init__(
         self,
         limits: Optional[AmountLimits] = None,
-        weight: float = 0.4  # Increase weight to 40%
+        weight: float = 0.3  # Amount has 30% weight in risk calculation
     ):
         super().__init__(name="AmountBasedRule", weight=weight)
         self.limits = limits or AmountLimits(
@@ -40,15 +40,9 @@ class AmountBasedRule(BaseRule):
                 }
             )
 
-        # Calculate risk score using a more aggressive formula for high amounts
+        # Calculate risk score based on amount ratio
         amount_ratio = transaction.amount / self.limits.max_amount
-        
-        # Use exponential growth for risk score when amount exceeds max_amount
-        if amount_ratio > 1.0:
-            risk_score = min(1.0, 0.5 + 0.5 * (amount_ratio - 1))
-        else:
-            # For amounts below max_amount, use a progressive scale
-            risk_score = 0.1 + (0.4 * amount_ratio)
+        risk_score = min(1.0, amount_ratio)
 
         # Determine if transaction is fraudulent based on amount
         is_fraudulent = transaction.amount > self.limits.max_amount
@@ -57,8 +51,7 @@ class AmountBasedRule(BaseRule):
         metadata = {
             "amount_ratio": amount_ratio,
             "max_amount": self.limits.max_amount,
-            "currency": self.limits.currency,
-            "risk_calculation": "exponential" if amount_ratio > 1.0 else "progressive"
+            "currency": self.limits.currency
         }
 
         if is_fraudulent:
@@ -73,12 +66,10 @@ class AmountBasedRule(BaseRule):
 
     def _get_reason(self, amount: float, risk_score: float) -> str:
         if risk_score >= 0.8:
-            return f"Amount {amount} is extremely high risk"
+            return f"Amount {amount} is very high risk"
         elif risk_score >= 0.6:
-            return f"Amount {amount} is high risk"
-        elif risk_score >= 0.4:
+            return f"Amount {amount} is medium-high risk"
+        elif risk_score >= 0.3:
             return f"Amount {amount} is medium risk"
-        elif risk_score >= 0.2:
-            return f"Amount {amount} is low-medium risk"
         else:
             return f"Amount {amount} is low risk" 

@@ -3,13 +3,35 @@ import time
 from confluent_kafka import Consumer, KafkaError
 import json
 import logging
+import os
 from typing import List, Dict
 from datetime import datetime
 import re
 
+# Create logs directory if it doesn't exist
+LOGS_DIR = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
+
 # Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+log_file = os.path.join(LOGS_DIR, f'performance_test_{current_time}.log')
+
+# Configure file handler
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Configure console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
+
+# Configure root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 def parse_iso_datetime(dt_str: str) -> datetime:
     """Safely parse ISO datetime string"""
