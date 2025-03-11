@@ -2,15 +2,12 @@ import os
 from typing import Dict, Any
 
 # Kafka settings
-KAFKA_CONFIG: Dict[str, Any] = {
-    'bootstrap.servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'),
-    'group.id': os.getenv('KAFKA_GROUP_ID', 'fraud-detection-group'),
-    'auto.offset.reset': 'earliest',
-    'enable.auto.commit': False,
-}
+KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:29092')
+KAFKA_CONSUMER_GROUP = os.getenv('KAFKA_CONSUMER_GROUP', 'fraud-detection-group')
+TRANSACTION_TOPIC = os.getenv('TRANSACTION_TOPIC', 'transactions')
+SECURITY_ALERT_TOPIC = os.getenv('SECURITY_ALERT_TOPIC', 'security.alerts')
 
 # Topics
-TRANSACTION_TOPIC = os.getenv('KAFKA_TRANSACTION_TOPIC', 'transactions')
 FRAUD_ALERT_TOPIC = os.getenv('KAFKA_FRAUD_ALERT_TOPIC', 'fraud-alerts')
 
 # Rule Engine settings
@@ -23,4 +20,8 @@ LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
 # Metrics
-METRICS_PORT = int(os.getenv('METRICS_PORT', '8000')) 
+METRICS_PORT = int(os.getenv('METRICS_PORT', '8000'))
+
+# Service Settings
+SERVICE_PORT = int(os.getenv('SERVICE_PORT', 8000))
+SERVICE_HOST = os.getenv('SERVICE_HOST', '0.0.0.0') 

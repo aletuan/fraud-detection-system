@@ -6,6 +6,8 @@ from datetime import datetime
 from .consumer import KafkaConsumer
 from .config import KafkaConfig
 from .concurrent_processor import ConcurrentProcessor, Message
+from core.alerts import FraudAlert
+from core.alert_service import AlertService
 
 # Default Kafka configuration
 DEFAULT_BOOTSTRAP_SERVERS = 'kafka:29092'
@@ -30,6 +32,7 @@ class TransactionConsumer:
         self,
         kafka_config: Optional[KafkaConfig] = None,
         detection_engine: Optional[FraudDetectionEngine] = None,
+        alert_service: Optional[AlertService] = None,
         dead_letter_topic: Optional[str] = DEFAULT_DLQ_TOPIC,
         max_workers: int = 10,
         preserve_ordering: bool = True
@@ -39,11 +42,13 @@ class TransactionConsumer:
         Args:
             kafka_config: Kafka configuration, uses settings if not provided
             detection_engine: Fraud detection engine instance
+            alert_service: Alert service instance
             dead_letter_topic: Topic for failed messages
             max_workers: Maximum number of concurrent workers
             preserve_ordering: Whether to preserve message ordering within partition
         """
         self.detection_engine = detection_engine or FraudDetectionEngine()
+        self.alert_service = alert_service or AlertService()
         
         if kafka_config is None:
             kafka_config = KafkaConfig(
@@ -199,7 +204,14 @@ class TransactionConsumer:
                     f"- Device: {transaction.device_info.device_type} ({transaction.device_info.browser_type} on {transaction.device_info.device_os})\n"
                     f"- Amount: {transaction.amount} {transaction.currency}"
                 )
-                # TODO: Publish fraud alert
+                
+                # Create and publish fraud alert
+                alert = FraudAlert.from_transaction(
+                    transaction=transaction,
+                    risk_score=result.risk_score,
+                    rules_triggered=result.rules_triggered
+                )
+                self.alert_service.publish_alert(alert)
                 
             return result
             
