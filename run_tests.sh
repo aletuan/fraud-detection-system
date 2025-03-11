@@ -47,11 +47,11 @@ check_service_health "transaction-service" || exit 1
 # Step 5: Run unit tests
 echo "=== Running unit tests ==="
 cd services/fraud-detection
-python -m pytest src/detection/rules/tests/ src/detection/tests/ -v
+python -m pytest src/detection/rules/tests/ src/detection/tests/ src/core/tests/ -v --cov=src
 
 # Step 6: Run performance tests
 echo "=== Running performance tests ==="
+cd services/fraud-detection 2>/dev/null || true  # Try to cd again, ignore if already there
 python src/tests/performance/run_performance_tests.py
-cd ../..
 
 echo "=== Test Suite Completed ===" 
