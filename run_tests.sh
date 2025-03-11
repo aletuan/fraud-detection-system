@@ -48,6 +48,10 @@ check_service_health "transaction-service" || exit 1
 echo "=== Running unit tests ==="
 cd services/fraud-detection
 python -m pytest src/detection/rules/tests/ src/detection/tests/ -v
+
+# Step 6: Run performance tests
+echo "=== Running performance tests ==="
+python src/tests/performance/run_performance_tests.py
 cd ../..
 
 echo "=== Test Suite Completed ===" 
