@@ -136,11 +136,15 @@ curl http://localhost:8000/metrics
 
 ### Testing
 ```bash
-# Run all tests
-pytest
+# Run test cases for engine
+PYTHONPATH=src python -m pytest src/detection/tests/test_engine.py -v
 
-# Run with coverage
-pytest --cov=src tests/
+# Run test cases for engine's rules
+PYTHONPATH=src python -m pytest src/detection/rules/tests/ -v
+
+# Core and kafka test
+PYTHONPATH=src python -m pytest src/core/tests/ src/kafka/tests/ -v
+
 ```
 
 ### Linting và Formatting
