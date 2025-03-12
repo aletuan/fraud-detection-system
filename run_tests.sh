@@ -52,7 +52,7 @@ cd services/fraud-detection
 mkdir -p src/tests/performance/logs
 
 # Run tests with PYTHONPATH set
-PYTHONPATH=src python -m pytest src/detection/rules/tests/ src/detection/tests/ src/core/tests/ src/kafka/tests/ -v --cov=src
+PYTHONPATH=src python -m pytest src/detection/rules/tests/ src/detection/tests/ src/core/tests/ src/kafka/tests/ src/tests/test_api.py src/tests/test_metrics.py -v --cov=src
 
 # Step 6: Run performance tests
 echo "=== Running performance tests ==="
