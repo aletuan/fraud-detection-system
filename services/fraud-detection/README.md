@@ -148,6 +148,9 @@ PYTHONPATH=src python -m pytest src/core/tests/ src/kafka/tests/ -v
 # Health test
 PYTHONPATH=src python -m pytest src/tests/test_api.py -v
 
+# Metric test
+PYTHONPATH=src python -m pytest src/tests/test_metrics.py -v
+
 ```
 
 ### Linting và Formatting
