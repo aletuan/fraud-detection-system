@@ -13,11 +13,16 @@ services:
       - PORT=8080
       - KAFKA_BROKERS=kafka:29092
       - KAFKA_TOPIC=transactions
+      - LOG_LEVEL=INFO
+      - LOGSTASH_HOST=logstash
+      - LOGSTASH_PORT=5044
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_started
+      logstash:
+        condition: service_healthy
     networks:
       - transaction-network
     healthcheck:
@@ -129,10 +134,11 @@ services:
       retries: 3
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -145,7 +151,7 @@ services:
       retries: 3
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.9.3
+    image: docker.elastic.co/kibana/kibana:8.12.2
     ports:
       - "5601:5601"
     depends_on:
@@ -159,9 +165,33 @@ services:
       timeout: 5s
       retries: 3
 
+  logstash:
+    build:
+      context: ./services/logstash
+      dockerfile: Dockerfile
+    volumes:
+      - ./config/logstash:/usr/share/logstash/pipeline:ro
+      - logs_data:/logs
+    ports:
+      - "5044:5044"
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+      - TZ=Asia/Ho_Chi_Minh
+    user: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - transaction-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9600 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 networks:
   transaction-network:
     driver: bridge
-
 volumes:
   mongodb_data:
+  logs_data:
