@@ -156,12 +156,30 @@ Xử lý và phân tích dữ liệu theo thời gian thực:
 
 ## Yêu Cầu Hệ Thống
 
-- Docker và Docker Compose
+### Ngôn Ngữ và Runtime
 - Go 1.21+
 - Python 3.9+
 - Kotlin/JDK 17
 - Node.js 18+
 - Rust 1.70+
+
+### Container và Orchestration
+- Docker và Docker Compose
+- Kubernetes (tùy chọn)
+- Helm (tùy chọn)
+
+### Monitoring và Logging
+- Elasticsearch 8.x
+- Logstash 8.x
+- Kibana 8.x
+
+### Message Queue
+- Apache Kafka 3.x
+- Kafka Connect (tùy chọn)
+
+### Databases
+- MongoDB 6.x
+- Redis 7.x
 
 ## Hướng Dẫn Cài Đặt
 
@@ -219,9 +237,40 @@ cargo build
 
 ## Giám Sát và Ghi Log
 
-- Elasticsearch + Kibana: Quản lý log tập trung
-- Prometheus + Grafana: Giám sát hệ thống
-- Kafka UI: Theo dõi message queue
+### ELK Stack (Elasticsearch, Logstash, Kibana)
+
+Hệ thống sử dụng ELK Stack để quản lý và phân tích logs tập trung:
+
+**Logstash:**
+- Cấu hình riêng cho từng service (fraud-detection.conf, transaction-service.conf)
+- Thu thập logs qua TCP với định dạng JSON
+- Thêm metadata: timestamp, service name, environment
+- Phân loại logs theo giờ
+- Gửi logs đến Elasticsearch với index format: {service-name}-YYYY.MM.DD
+
+**Elasticsearch:**
+- Lưu trữ và đánh index logs
+- Indices theo service và ngày
+- Hỗ trợ tìm kiếm full-text và truy vấn có cấu trúc
+- Lưu trữ metadata và thông tin chi tiết về giao dịch
+
+**Kibana:**
+- Giao diện trực quan để xem và phân tích logs
+- Dashboard theo dõi fraud alerts
+- Biểu đồ phân tích xu hướng gian lận
+- Bộ lọc theo thời gian, loại gian lận, mức độ rủi ro
+
+**Cấu trúc Log:**
+- Log levels: INFO, WARNING, ERROR
+- Metadata: service, environment, timestamp
+- Chi tiết giao dịch: ID, amount, location, device
+- Thông tin fraud: risk score, triggered rules
+
+### Các Công Cụ Giám Sát Khác
+
+- Prometheus + Grafana: Giám sát metrics hệ thống
+- Kafka UI: Theo dõi message queue và consumer groups
+- Jaeger: Distributed tracing
 
 ## Tài Liệu API
 

@@ -97,11 +97,32 @@
   - [ ] Response time metrics
   - [ ] Error rate metrics
   - [ ] Kafka producer metrics
-- [ ] Logging Enhancement
-  - [ ] Structured logging format
-  - [ ] Log aggregation setup
-  - [ ] Log correlation (trace ID)
+- [-] Logging Enhancement (In Progress - ELK Stack Integration)
+  - [~] Structured logging format (70% complete)
+    - [x] Basic log structure
+    - [x] JSON formatting
+    - [ ] Additional metadata fields
+  - [~] Log aggregation with Logstash (50% complete)
+    - [x] Basic Logstash configuration
+    - [x] TCP input setup
+    - [ ] Log parsing rules
+    - [ ] Log enrichment
+  - [~] Log correlation with trace IDs (30% complete)
+    - [x] Trace ID generation
+    - [ ] Trace propagation
+    - [ ] Context enrichment
   - [ ] Error logging improvements
+    - [ ] Error categorization
+    - [ ] Stack trace formatting
+    - [ ] Error context enrichment
+  - [ ] Kibana dashboard setup
+    - [ ] Transaction monitoring dashboard
+    - [ ] Error analysis dashboard
+    - [ ] Performance metrics visualization
+  - [ ] Elasticsearch index management
+    - [ ] Index templates
+    - [ ] Lifecycle policies
+    - [ ] Retention policies
 - [ ] Health Checks
   - [ ] Service health endpoints
   - [ ] Dependencies health check
@@ -146,11 +167,27 @@
 ## Documentation
 
 ### 1. API Documentation (Priority: High)
-- [ ] OpenAPI/Swagger Specification
-  - [ ] API endpoints documentation
-  - [ ] Request/Response examples
-  - [ ] Error codes and messages
-  - [ ] Authentication guide
+- [x] OpenAPI/Swagger Specification
+  - [x] API endpoints documentation
+    - [x] POST /api/v1/transactions (Create)
+    - [x] PUT /transactions/:id (Update)
+    - [x] GET /transactions/:id (Get by ID)
+    - [x] GET /transactions (List with filters)
+    - [x] GET /transactions/account/:id (Get by Account)
+  - [x] Request/Response schemas
+    - [x] Transaction model
+    - [x] Create/Update request DTOs
+    - [x] List response with pagination
+    - [x] Error response format
+  - [x] Authentication methods
+    - [x] API Key authentication
+    - [x] JWT Bearer authentication
+  - [x] Examples and descriptions
+- [x] Swagger UI Integration
+  - [x] Docker container setup
+  - [x] Configuration with custom settings
+  - [x] Environment-specific server URLs
+  - [x] Interactive API testing interface
 - [ ] Integration Guide
   - [ ] Getting started guide
   - [ ] Authentication setup

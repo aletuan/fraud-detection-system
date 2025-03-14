@@ -93,55 +93,46 @@ Priority: Medium
 
 ### 5. Event Publishing
 Priority: High
-- [ ] Event types
-  - [ ] Risk assessment completed
-  - [ ] Fraud detected
-  - [ ] Suspicious activity
-  - [ ] Pattern detected
-  - [ ] Real-time alerts
+- [x] Event types
+  - [x] Risk assessment completed
+  - [x] Fraud detected
+  - [x] Suspicious activity
+  - [x] Pattern detected
+  - [x] Real-time alerts
   - [ ] Batch summary alerts
-- [ ] Event enrichment
-  - [ ] Risk factors
-  - [ ] Recommended actions
-  - [ ] Evidence data
-  - [ ] Alert priority levels
-  - [ ] Alert categories
-  - [ ] Context information
-- [ ] Publishing
-  - [ ] Kafka producer
+- [x] Event enrichment
+  - [x] Risk factors
+  - [x] Recommended actions
+  - [x] Evidence data
+  - [x] Alert priority levels
+  - [x] Alert categories
+  - [x] Context information
+- [x] Publishing
+  - [x] Kafka producer
+  - [x] Error handling
+  - [x] Retry mechanism
+  - [ ] Batch processing option
+  - [x] Alert deduplication
+  - [x] Alert correlation
+  - [x] Delivery guarantees
+
+### 6. Risk Score Publishing
+Priority: High
+- [ ] Score Generation
+  - [ ] Risk score calculation
+  - [ ] Confidence level
+  - [ ] Contributing factors
+  - [ ] Rule weights
+- [ ] Event Publishing
+  - [ ] Score event format
+  - [ ] Metadata enrichment
+  - [ ] Transaction context
+  - [ ] Rule trigger details
+- [ ] Integration
+  - [ ] Security Alert Service integration
+  - [ ] Performance monitoring
   - [ ] Error handling
   - [ ] Retry mechanism
-  - [ ] Batch processing option
-  - [ ] Alert deduplication
-  - [ ] Alert correlation
-  - [ ] Delivery guarantees
-
-### 6. Real-time Alert Processing
-Priority: High
-- [ ] Alert Generation
-  - [ ] Alert templates
-  - [ ] Priority calculation
-  - [ ] Alert enrichment
-  - [ ] Alert correlation
-  - [ ] Rate limiting
-- [ ] Alert Routing
-  - [ ] Routing rules
-  - [ ] Channel selection
-  - [ ] Recipient determination
-  - [ ] Escalation paths
-  - [ ] Fallback strategies
-- [ ] Alert Management
-  - [ ] Alert lifecycle tracking
-  - [ ] Alert status updates
-  - [ ] Alert resolution workflow
-  - [ ] Alert aggregation
-  - [ ] SLA monitoring
-- [ ] Alert Storage
-  - [ ] Alert history
-  - [ ] Audit trail
-  - [ ] Search capabilities
-  - [ ] Retention policies
-  - [ ] Archival strategy
 
 ### 7. Redis Integration
 Priority: High
@@ -210,13 +201,14 @@ Priority: High
   - [x] Queue depth monitoring
   - [x] Processing throughput
   - [x] Error rates by category
-- [x] Logging
-  - [x] Structured logging
-  - [x] Log aggregation
-  - [x] Log correlation
-  - [ ] Alert audit logging
-  - [x] Performance logging
-  - [x] Debug logging
+- [x] Logging (ELK Stack Integration)
+  - [x] Structured logging with standardized format
+  - [x] Log aggregation with Logstash
+  - [x] Log correlation with trace IDs
+  - [x] Performance logging and metrics
+  - [x] Debug logging with appropriate levels
+  - [x] Elasticsearch indices configuration
+  - [x] Kibana dashboards for log analysis
 - [x] Health Checks
   - [x] Service health
   - [x] Dependencies health

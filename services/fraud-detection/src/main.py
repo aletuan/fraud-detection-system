@@ -11,11 +11,13 @@ from kafka.consumer import KafkaConsumer
 from kafka.config import KafkaConfig
 from kafka.transaction_consumer import TransactionConsumer, DEFAULT_BOOTSTRAP_SERVERS, DEFAULT_GROUP_ID, DEFAULT_TRANSACTION_TOPIC, DEFAULT_DLQ_TOPIC
 from detection.engine import FraudDetectionEngine
+from utils.logging import setup_logging
 
 # Configure logging
-logging.basicConfig(
-    level=os.getenv('LOG_LEVEL', 'INFO'),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+setup_logging(
+    logstash_host=os.getenv('LOGSTASH_HOST', 'logstash'),
+    logstash_port=int(os.getenv('LOGSTASH_PORT', '5044')),
+    log_level=os.getenv('LOG_LEVEL', 'INFO')
 )
 logger = logging.getLogger(__name__)
 

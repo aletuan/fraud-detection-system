@@ -1,0 +1,515 @@
+openapi: 3.0.3
+info:
+  title: Transaction Service API
+  description: |
+    API documentation for the Transaction Service, part of the Fraud Detection System.
+    This service handles transaction processing, validation, and integration with fraud detection.
+  version: 1.0.0
+  contact:
+    name: Transaction Service Team
+    email: support@frauddetection.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local Development
+  - url: https://api.frauddetection.com
+    description: Production Environment
+
+tags:
+  - name: Transactions
+    description: Transaction management endpoints
+
+components:
+  schemas:
+    CreateTransactionRequest:
+      type: object
+      required:
+        - account_id
+        - amount
+        - currency
+        - type
+        - reference_id
+      properties:
+        account_id:
+          type: string
+          description: Account ID associated with the transaction
+        amount:
+          type: number
+          format: double
+          description: Transaction amount
+          minimum: 0
+          exclusiveMinimum: true
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: Transaction currency (ISO 4217)
+          example: USD
+        type:
+          type: string
+          enum: [DEBIT, CREDIT]
+          description: Transaction type
+        description:
+          type: string
+          description: Transaction description
+        merchant_info:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Merchant ID
+            name:
+              type: string
+              description: Merchant name
+            category:
+              type: string
+              description: Merchant category
+            country:
+              type: string
+              description: Merchant country code
+        location:
+          type: object
+          properties:
+            country:
+              type: string
+              description: Country code
+            city:
+              type: string
+              description: City name
+            ip:
+              type: string
+              format: ipv4
+              description: IP address
+        device_info:
+          type: object
+          properties:
+            device_id:
+              type: string
+              description: Device identifier
+            device_type:
+              type: string
+              enum: [mobile, desktop, tablet, unknown]
+            browser_type:
+              type: string
+            device_os:
+              type: string
+            is_mobile:
+              type: boolean
+        reference_id:
+          type: string
+          format: uuid
+          description: Unique reference ID for the transaction
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional transaction metadata
+
+    UpdateTransactionRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED, REJECTED]
+          description: New transaction status
+        description:
+          type: string
+          description: Updated transaction description
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Updated transaction metadata
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Transaction ID (auto-generated)
+        account_id:
+          type: string
+          description: Account ID associated with the transaction
+        amount:
+          type: number
+          format: double
+          description: Transaction amount
+        currency:
+          type: string
+          description: Transaction currency
+        type:
+          type: string
+          enum: [DEBIT, CREDIT]
+          description: Transaction type
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED, REJECTED]
+          description: Transaction status
+        description:
+          type: string
+          description: Transaction description
+        merchant_id:
+          type: string
+          description: Merchant ID
+        merchant_name:
+          type: string
+          description: Merchant name
+        location:
+          type: object
+          properties:
+            country:
+              type: string
+              description: Country code
+            city:
+              type: string
+              description: City name
+            ip:
+              type: string
+              format: ipv4
+              description: IP address
+        device_info:
+          type: object
+          properties:
+            device_id:
+              type: string
+              description: Device identifier
+            device_type:
+              type: string
+              enum: [mobile, desktop, tablet, unknown]
+            browser_type:
+              type: string
+            device_os:
+              type: string
+            is_mobile:
+              type: boolean
+        reference_id:
+          type: string
+          format: uuid
+          description: Unique reference ID for the transaction
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Additional transaction metadata
+        created_at:
+          type: string
+          format: date-time
+          description: Transaction creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Transaction last update timestamp
+
+    TransactionList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        total:
+          type: integer
+          description: Total number of items
+        page:
+          type: integer
+          description: Current page number
+        page_size:
+          type: integer
+          description: Items per page
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error message
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/v1/transactions:
+    post:
+      tags:
+        - Transactions
+      summary: Create a new transaction
+      description: Creates a new transaction with the provided details
+      operationId: createTransaction
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Duplicate transaction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Transactions
+      summary: List transactions
+      description: Retrieves a list of transactions with optional filtering
+      operationId: listTransactions
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 10
+        - name: sort_by
+          in: query
+          description: Field to sort by
+          schema:
+            type: string
+            default: created_at
+        - name: sort_desc
+          in: query
+          description: Sort in descending order
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/transactions/{id}:
+    get:
+      tags:
+        - Transactions
+      summary: Get transaction by ID
+      description: Retrieves a specific transaction by its ID
+      operationId: getTransaction
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Transaction ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Transactions
+      summary: Update transaction
+      description: Updates an existing transaction
+      operationId: updateTransaction
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Transaction ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTransactionRequest'
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/transactions/account/{id}:
+    get:
+      tags:
+        - Transactions
+      summary: Get transactions by account ID
+      description: Retrieves all transactions for a specific account
+      operationId: getAccountTransactions
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Account ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            default: 10
+        - name: sort_by
+          in: query
+          description: Field to sort by
+          schema:
+            type: string
+            default: created_at
+        - name: sort_desc
+          in: query
+          description: Sort in descending order
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: List of account transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionList'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error' 
