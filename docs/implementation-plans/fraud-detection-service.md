@@ -116,32 +116,23 @@ Priority: High
   - [x] Alert correlation
   - [x] Delivery guarantees
 
-### 6. Real-time Alert Processing
+### 6. Risk Score Publishing
 Priority: High
-- [ ] Alert Generation
-  - [ ] Alert templates
-  - [ ] Priority calculation
-  - [ ] Alert enrichment
-  - [ ] Alert correlation
-  - [ ] Rate limiting
-- [ ] Alert Routing
-  - [ ] Routing rules
-  - [ ] Channel selection
-  - [ ] Recipient determination
-  - [ ] Escalation paths
-  - [ ] Fallback strategies
-- [ ] Alert Management
-  - [ ] Alert lifecycle tracking
-  - [ ] Alert status updates
-  - [ ] Alert resolution workflow
-  - [ ] Alert aggregation
-  - [ ] SLA monitoring
-- [ ] Alert Storage
-  - [ ] Alert history
-  - [ ] Audit trail
-  - [ ] Search capabilities
-  - [ ] Retention policies
-  - [ ] Archival strategy
+- [ ] Score Generation
+  - [ ] Risk score calculation
+  - [ ] Confidence level
+  - [ ] Contributing factors
+  - [ ] Rule weights
+- [ ] Event Publishing
+  - [ ] Score event format
+  - [ ] Metadata enrichment
+  - [ ] Transaction context
+  - [ ] Rule trigger details
+- [ ] Integration
+  - [ ] Security Alert Service integration
+  - [ ] Performance monitoring
+  - [ ] Error handling
+  - [ ] Retry mechanism
 
 ### 7. Redis Integration
 Priority: High
