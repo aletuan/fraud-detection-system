@@ -167,11 +167,27 @@
 ## Documentation
 
 ### 1. API Documentation (Priority: High)
-- [ ] OpenAPI/Swagger Specification
-  - [ ] API endpoints documentation
-  - [ ] Request/Response examples
-  - [ ] Error codes and messages
-  - [ ] Authentication guide
+- [x] OpenAPI/Swagger Specification
+  - [x] API endpoints documentation
+    - [x] POST /api/v1/transactions (Create)
+    - [x] PUT /transactions/:id (Update)
+    - [x] GET /transactions/:id (Get by ID)
+    - [x] GET /transactions (List with filters)
+    - [x] GET /transactions/account/:id (Get by Account)
+  - [x] Request/Response schemas
+    - [x] Transaction model
+    - [x] Create/Update request DTOs
+    - [x] List response with pagination
+    - [x] Error response format
+  - [x] Authentication methods
+    - [x] API Key authentication
+    - [x] JWT Bearer authentication
+  - [x] Examples and descriptions
+- [x] Swagger UI Integration
+  - [x] Docker container setup
+  - [x] Configuration with custom settings
+  - [x] Environment-specific server URLs
+  - [x] Interactive API testing interface
 - [ ] Integration Guide
   - [ ] Getting started guide
   - [ ] Authentication setup
