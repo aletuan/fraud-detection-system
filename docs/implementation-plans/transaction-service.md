@@ -133,11 +133,6 @@
     - [x] MongoDB connection check
     - [x] Kafka connection check
     - [x] Logstash connection check
-  - [ ] Custom health metrics
-- [ ] Alerting
-  - [ ] Error rate alerts
-  - [ ] Performance degradation alerts
-  - [ ] Dependency issues alerts
 
 ### 2. Security Enhancements (Priority: High)
 - [ ] Authentication
@@ -195,11 +190,6 @@
   - [x] Configuration with custom settings
   - [x] Environment-specific server URLs
   - [x] Interactive API testing interface
-- [ ] Integration Guide
-  - [ ] Getting started guide
-  - [ ] Authentication setup
-  - [ ] Event schema documentation
-  - [ ] Example implementations
 
 ### 2. Technical Documentation (Priority: Medium)
 - [x] Architecture overview
