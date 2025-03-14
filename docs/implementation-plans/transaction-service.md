@@ -123,9 +123,16 @@
     - [ ] Index templates
     - [ ] Lifecycle policies
     - [ ] Retention policies
-- [ ] Health Checks
-  - [ ] Service health endpoints
-  - [ ] Dependencies health check
+- [x] Health Checks
+  - [x] Service health endpoint (/health)
+  - [x] Docker healthcheck configuration
+    - [x] Regular health polling (10s interval)
+    - [x] Appropriate timeout settings (5s)
+    - [x] Automatic container restart on failure
+  - [x] Dependencies health check
+    - [x] MongoDB connection check
+    - [x] Kafka connection check
+    - [x] Logstash connection check
   - [ ] Custom health metrics
 - [ ] Alerting
   - [ ] Error rate alerts
