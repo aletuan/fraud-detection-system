@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -12,14 +14,15 @@ import (
 )
 
 type LogEntry struct {
-	Timestamp  string `json:"timestamp"`
-	Method     string `json:"method"`
-	Path       string `json:"path"`
-	Status     int    `json:"status"`
-	Duration   string `json:"duration"`
-	IP         string `json:"ip"`
-	UserAgent  string `json:"user_agent"`
-	ServerName string `json:"server_name"`
+	Timestamp  string      `json:"timestamp"`
+	Method     string      `json:"method"`
+	Path       string      `json:"path"`
+	Status     int         `json:"status"`
+	Duration   string      `json:"duration"`
+	IP         string      `json:"ip"`
+	UserAgent  string      `json:"user_agent"`
+	ServerName string      `json:"server_name"`
+	Payload    interface{} `json:"payload,omitempty"`
 }
 
 type logstashConnection struct {
@@ -99,6 +102,17 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			status:         http.StatusOK,
 		}
 
+		// Read and parse request body for non-GET requests
+		var payload interface{}
+		if r.Method != http.MethodGet && r.ContentLength > 0 {
+			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+				log.Printf("Failed to read request body: %v", err)
+			}
+			// Create a new reader with the same data for the next handler
+			jsonData, _ := json.Marshal(payload)
+			r.Body = io.NopCloser(bytes.NewBuffer(jsonData))
+		}
+
 		// Call the next handler
 		next.ServeHTTP(rw, r)
 
@@ -112,6 +126,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			IP:         r.RemoteAddr,
 			UserAgent:  r.UserAgent(),
 			ServerName: hostname,
+			Payload:    payload,
 		}
 
 		// Convert to JSON
