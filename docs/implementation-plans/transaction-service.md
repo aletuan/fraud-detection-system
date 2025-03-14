@@ -97,11 +97,32 @@
   - [ ] Response time metrics
   - [ ] Error rate metrics
   - [ ] Kafka producer metrics
-- [ ] Logging Enhancement
-  - [ ] Structured logging format
-  - [ ] Log aggregation setup
-  - [ ] Log correlation (trace ID)
+- [-] Logging Enhancement (In Progress - ELK Stack Integration)
+  - [~] Structured logging format (70% complete)
+    - [x] Basic log structure
+    - [x] JSON formatting
+    - [ ] Additional metadata fields
+  - [~] Log aggregation with Logstash (50% complete)
+    - [x] Basic Logstash configuration
+    - [x] TCP input setup
+    - [ ] Log parsing rules
+    - [ ] Log enrichment
+  - [~] Log correlation with trace IDs (30% complete)
+    - [x] Trace ID generation
+    - [ ] Trace propagation
+    - [ ] Context enrichment
   - [ ] Error logging improvements
+    - [ ] Error categorization
+    - [ ] Stack trace formatting
+    - [ ] Error context enrichment
+  - [ ] Kibana dashboard setup
+    - [ ] Transaction monitoring dashboard
+    - [ ] Error analysis dashboard
+    - [ ] Performance metrics visualization
+  - [ ] Elasticsearch index management
+    - [ ] Index templates
+    - [ ] Lifecycle policies
+    - [ ] Retention policies
 - [ ] Health Checks
   - [ ] Service health endpoints
   - [ ] Dependencies health check
