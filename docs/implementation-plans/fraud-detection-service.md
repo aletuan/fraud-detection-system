@@ -15,8 +15,6 @@ Priority: High
   - [x] Transaction event schema
   - [x] JSON validation
   - [x] Error handling
-  - [ ] Schema versioning support
-  - [ ] Schema evolution handling
 - [x] Message processing pipeline
   - [x] Concurrent processing
   - [x] Order guarantee
@@ -118,21 +116,22 @@ Priority: High
 
 ### 6. Risk Score Publishing
 Priority: High
-- [ ] Score Generation
-  - [ ] Risk score calculation
-  - [ ] Confidence level
-  - [ ] Contributing factors
-  - [ ] Rule weights
-- [ ] Event Publishing
-  - [ ] Score event format
-  - [ ] Metadata enrichment
-  - [ ] Transaction context
-  - [ ] Rule trigger details
-- [ ] Integration
-  - [ ] Security Alert Service integration
-  - [ ] Performance monitoring
-  - [ ] Error handling
-  - [ ] Retry mechanism
+- [x] Score Generation
+  - [x] Risk score calculation with weighted rules
+  - [x] Rule-based confidence scoring
+  - [x] Contributing factors tracking
+  - [x] Rule weights configuration
+- [x] Event Publishing
+  - [x] Score event format in alerts
+  - [x] Rich metadata enrichment
+  - [x] Full transaction context
+  - [x] Detailed rule triggers
+- [x] Integration
+  - [x] Alert Service integration
+  - [x] Prometheus metrics
+  - [x] Error handling
+  - [x] Retry mechanism
+  - [x] Performance monitoring
 
 ### 7. Redis Integration
 Priority: High
