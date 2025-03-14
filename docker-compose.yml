@@ -35,6 +35,8 @@ services:
     build:
       context: ./services/fraud-detection
       dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - KAFKA_CONSUMER_GROUP=fraud-detection-group
@@ -43,6 +45,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - LOG_LEVEL=INFO
+      - LOGSTASH_HOST=logstash
+      - LOGSTASH_PORT=5044
     depends_on:
       kafka:
         condition: service_started
